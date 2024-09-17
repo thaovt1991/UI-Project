@@ -1,0 +1,83 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  //A Hoàn tronmg codx UI
+  // "compilerOptions": {
+  //   "baseUrl": "./",
+  //   "outDir": "./dist/out-tsc",
+  //   // "strict": true,
+  //   "noImplicitOverride": true,
+  //   //"noPropertyAccessFromIndexSignature": true,
+  //   "noImplicitReturns": true,
+  //   "noFallthroughCasesInSwitch": true,
+  //   "resolveJsonModule": true,
+  //   //"esModuleInterop": true,
+  //   "allowSyntheticDefaultImports": true,
+  //   "sourceMap": true,
+  //   "declaration": false,
+  //   "downlevelIteration": true,
+  //   "experimentalDecorators": true,
+  //   "moduleResolution": "node",
+  //của mặc định và thêm
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    //"strict": true, //Bật các kiểm tra kiểu nghiêm ngặt. - tắt đi nó ko báo lỗi đỏ nữa (Lỗi đỏ khi tạo model vào fun không khai báo kiểu dữ liệu)
+    "noImplicitOverride": true, //khi làm việc với các lớp và kế thừa, chúng ta thường override (ghi đè) các phương thức từ lớp cha. Tùy chọn noImplicitOverride trong tsconfig.json giúp TypeScript đảm bảo rằng việc override này được thực hiện một cách rõ ràng và chính xác.
+    //"noPropertyAccessFromIndexSignature": true, //một cấu hình liên quan đến cách TypeScript kiểm tra và báo lỗi khi bạn truy cập vào các thuộc tính của một đối tượng thông qua ký hiệu ngoặc vuông ([]) => bỏ đi để có thể tùy ý
+    "noImplicitReturns": true, //báo lỗi nếu ko return với các hàm khác "void" - Trong TypeScript, khi định nghĩa một hàm, chúng ta thường khai báo kiểu dữ liệu trả về của hàm đó. Tùy chọn noImplicitReturns trong tsconfig.json giúp TypeScript đảm bảo rằng mọi nhánh của hàm đều trả về giá trị có kiểu phù hợp với kiểu trả về đã khai báo
+    "noFallthroughCasesInSwitch": true, //đảm bảo rằng các case trong một câu lệnh switch không bị "rơi qua" (fallthrough) vào case tiếp theo một cách vô tình.
+    "sourceMap": true, //Tạo file sourcemap để giúp debug dễ dàng hơn.
+    "declaration": false, //Khi bạn đặt declaration thành true, TypeScript sẽ tự động tạo ra các file .d.ts tương ứng với các file TypeScript của bạn. -Tùy chọn declaration trong tsconfig.json là một công cụ hữu ích để tạo ra các thư viện TypeScript có thể tái sử dụng và dễ dàng tích hợp với các hệ thống khác. 
+    "downlevelIteration": true, //có vai trò quan trọng trong việc hỗ trợ các tính năng lặp (iteration) mới của JavaScript (như for...of, for...in) trên các trình duyệt hoặc môi trường thực thi cũ hơn,
+    "experimentalDecorators": true, //Khi bạn bật tùy chọn này, TypeScript sẽ cho phép bạn sử dụng cú pháp và ngữ nghĩa của Decorator trong code của mình.
+    // Sử dụng decorator: Để có thể sử dụng các decorator trong code TypeScript của bạn.
+    // Tích hợp với các framework: Nhiều framework như Angular sử dụng decorator rất nhiều để cấu hình và mở rộng các component.
+//     / Decorator
+// function Log(target: any, propertyName: string | symbol) {
+//   console.log(`Property ${propertyName} is being accessed.`);
+// }
+
+// // Class sử dụng decorator
+// class Person {
+//   @Log
+//   name: string;
+// }
+// const person = new Person();
+// person.name = 'John Doe'; // Sẽ in ra console: "Property name is being accessed."
+    "moduleResolution": "node", //Nó xác định cách TypeScript sẽ tìm kiếm các module khi chúng ta import chúng trong code ()
+    // node: (Mặc định) Sử dụng thuật toán giải quyết module tương tự như Node.js, tìm kiếm các module theo cấu trúc thư mục và các file node_modules.
+    // classic: Sử dụng thuật toán giải quyết module cũ hơn, tìm kiếm các module theo cấu trúc thư mục phẳng.
+    // bundler: Dành cho các môi trường sử dụng bundler (như Webpack, Rollup), cho phép cấu hình linh hoạt hơn trong việc giải quyết module.
+   "allowSyntheticDefaultImports": true,
+    //Khi đặt allowSyntheticDefaultImports thành true trong tsconfig.json, TypeScript sẽ cho phép chúng ta sử dụng cú pháp import mặc định (default import) cho cả các module CommonJS không có khai báo export default.
+    "importHelpers": true,
+    "target": "ES2022", //chỉ định phiên bản ECMAScript mà mã được biên dịch. Ví dụ: ES5, ES6 (ES2015), ESNext.
+    "module": "ES2022", //Chỉ định loại module được sử dụng (commonjs, es2015, system, umd, amd).
+    "useDefineForClassFields": false,
+    "lib": [
+      "ES2022",
+      "dom"
+  ],
+  "resolveJsonModule": true,  //Cần ví dụ : config là 1 json  =>true :import config from './config.json' => hiểu là 1 đối tượng. còn fales ko
+// Tiện lợi: Bạn không cần phải viết thêm code để đọc file JSON, mà có thể import trực tiếp như một module.
+// Kiểu an toàn: TypeScript có thể kiểm tra kiểu dữ liệu khi bạn import các file JSON, giúp giảm thiểu lỗi thời gian chạy.
+// Tích hợp tốt: Khi sử dụng các framework như Angular, React, việc import JSON trực tiếp giúp code trở nên gọn gàng và dễ đọc hơn.
+  },
+  "angularCompilerOptions": {
+    //mặc định
+    // "enableI18nLegacyMessageIdFormat": false, //Tùy chọn này kiểm soát định dạng của các ID message được sử dụng trong quá trình quốc tế hóa (internationalization - i18n) của ứng dụng.
+    // "strictInjectionParameters": true,
+    // "strictInputAccessModifiers": true, //đảm bảo rằng các thuộc tính đầu vào (input properties) của các thành phần (component) chỉ có thể được truy cập từ bên trong template của thành phần đó. Điều này giúp ngăn chặn việc truy cập trực tiếp vào các thuộc tính đầu vào từ bên ngoài, giúp cho code của bạn sạch hơn, dễ bảo trì hơn và giảm thiểu khả năng xảy ra các lỗi tiềm ẩn.
+    // "strictTemplates": true, // Bật kiểm tra strict cho các template, giúp phát hiện các lỗi tiềm ẩn sớm hơn.
+    //preserveWhitespaces:false,  //Xác định cách xử lý các khoảng trắng trong template.
+    //suppressAngularSpecificTypeChecks: Tắt các kiểm tra kiểu cụ thể của Angula
+
+
+    "fullTemplateTypeCheck": true,// Bật kiểm tra kiểu đầy đủ cho các template.
+    "strictInjectionParameters": true, //đảm bảo rằng các tham số được tiêm vào các thành phần, directive hoặc service phải hoàn toàn tương thích với kiểu dữ liệu đã khai báo
+    "enableIvy": true,//Bật hoặc tắt Ivy renderer, một công cụ biên dịch mới trong Angular.
+    "allowEmptyCodegenFiles": true //cho phép Angular tạo ra các file mã được sinh ra (generated code files) thậm chí khi chúng không chứa bất kỳ nội dung nào.
+  }
+}

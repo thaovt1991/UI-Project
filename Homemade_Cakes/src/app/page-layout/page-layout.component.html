@@ -1,0 +1,90 @@
+<div class="toolbar" role="banner">
+  <img width="40" alt="Logo" src="../assets/images/testcakes.jpg" />
+  <span>Homemade Cakes</span>
+  <div class="spacer"></div>
+  <span
+  class="text-menu"
+  target="_blank"
+  rel="noopener"
+  (click)="click(4)"
+>
+  Số học
+</span>
+  <span
+    class="text-menu"
+    target="_blank"
+    rel="noopener"
+    (click)="click(1)"
+  >
+    Liên hệ
+  </span>
+  <span
+    class="text-menu"
+    target="_blank"
+    rel="noopener"
+    (click)="click(2)"
+  >
+    Giỏ hàng
+  </span>
+  <ng-container *ngIf="isLogIn; else logOut" > 
+  <span
+    class="text-menu"
+    target="_blank"
+    rel="noopener"
+    (click)="click(3)"
+  >
+  Log in 
+  </span>
+</ng-container>
+<ng-template #logOut>
+  <span
+  class="text-menu"
+  target="_blank"
+  rel="noopener"
+  href=""
+
+>
+Log out
+</span>
+
+</ng-template>
+
+  
+  
+</div>
+
+<div class="content" role="main">
+  <div>
+    <marquee>
+      <h5 class="text-center">
+        <p
+          class="tm-site-name tm-handwriting-font text-center"
+          style="color: red; font-size: 40px; font-family: 'Dancing'"
+        >
+          Caker Homemade
+        </p>
+      </h5>
+    </marquee>
+  </div>
+  <div class="style-cakes">
+    <ngx-slick-carousel
+      class="carousel"
+      #slickModal="slick-carousel"
+      [config]="slideConfig"
+      (init)="slickInit($event)"
+      (breakpoint)="breakpoint($event)"
+      (afterChange)="afterChange($event)"
+      (beforeChange)="beforeChange($event)"
+    >
+      <div ngxSlickItem *ngFor="let slide of slides" class="slide">
+        <img
+          src="{{ slide.img }}"
+          alt=""
+          class="img-style"
+          width="100%"
+          height="100%"
+        />
+      </div>
+    </ngx-slick-carousel>
+  </div>
+</div>

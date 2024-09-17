@@ -1,0 +1,19 @@
+/* You can add global styles to this file, and also import other style files */
+/* css .carousel-*/
+.slick-prev:before,
+.slick-next:before {
+  color: black !important;
+}
+
+.img-style {
+  margin-left: auto;
+  margin-left: auto;
+  height: 250;
+  width: 250;
+}
+@media (max-width: 992) {
+  .img-style {
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+  }
+}

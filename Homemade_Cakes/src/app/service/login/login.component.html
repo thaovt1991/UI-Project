@@ -1,0 +1,71 @@
+<form
+  autocomplete="off"
+  #loginForm="ngForm"
+  (ngSubmit)="loginAccount(loginForm.value)"
+>
+<ng-container *ngIf="isFormLogin;else createAccount">
+  <div class="form-group">
+    <div class="row g-3 align-items-center">
+      <div class="col-auto">
+    <label for="userName">User Name</label>
+      </div>
+      <div class="col-auto">
+        <input name="userName" [(ngModel)]="user.userName" type="text" class="form-control" required minlength="3">
+      </div>
+    </div>
+    <div class="row g-3 align-items-center">
+      <div class="col-auto">
+        <label for="inputPassword6" class="col-form-label">Password</label>
+      </div>
+      <div class="col-auto">
+        <input type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline" name="password" [(ngModel)]="user.password">
+      </div>
+      <!-- <div class="col-auto">
+        <span id="passwordHelpInline" class="form-text">
+          Must be 8-20 characters long.
+        </span>
+      </div> -->
+    </div>
+  </div>
+  <div class="d-flex">
+    <button  type="button" (click)="openForm('createNew')" class="btn btn-primary mr-1">Created</button>
+    <button type="submit" class="btn btn-primary mr-1">Log in</button>
+  </div>  
+</ng-container>
+</form>
+
+<ng-template #createAccount>
+  <div class="row g-3 align-items-center">
+    <div class="col-auto">
+  <label for="userName">User Name</label>
+    </div>
+    <div class="col-auto">
+      <input name="userName" [(ngModel)]="user.userName" type="text" class="form-control" required minlength="3">
+    </div>
+  </div>
+  <div class="row g-3 align-items-center">
+    <div class="col-auto">
+      <label for="inputPassword6" class="col-form-label">Password</label>
+    </div>
+    <div class="col-auto">
+      <input type="password" id="inputPassword6" class="form-control" aria-describedby="passwordHelpInline">
+    </div>
+    <!-- <div class="col-auto">
+      <span id="passwordHelpInline" class="form-text">
+        Must be 8-20 characters long.
+      </span>
+    </div> -->
+  </div>
+  <div class="row g-3 align-items-center">
+    <div class="col-auto">
+      <label for="inputPassword2" class="col-form-label">Confirm Password</label>
+    </div>
+    <div class="col-auto">
+      <input type="password" id="inputPassword2" class="form-control" aria-describedby="passwordHelpInline">
+    </div>
+    
+    <button  type="button" (click)="openForm('logIn')" class="btn btn-primary mr-1">Sign in</button>
+    <button type="button" class="btn btn-primary mr-1">Save</button>
+  </div>
+</ng-template>
+
