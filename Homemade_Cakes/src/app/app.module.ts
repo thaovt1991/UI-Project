@@ -23,7 +23,6 @@ import {
   NgxUiLoaderHttpModule,
 } from 'ngx-ui-loader';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { ManagerNumberComponent } from './modules/manager-number/manager-number.component';
 import { ManagerCakesComponent } from './modules/manager-cakes/manager-cakes.component';
 
 
@@ -62,7 +61,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     AppComponent,
     LoginComponent,
     AuthComponent,
-    ManagerNumberComponent,
+   // ManagerNumberComponent,
     ManagerCakesComponent,
   ],
   imports: [

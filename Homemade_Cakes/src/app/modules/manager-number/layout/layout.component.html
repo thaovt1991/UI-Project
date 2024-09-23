@@ -1,0 +1,48 @@
+ <div class="toolbar" role="banner">
+    <span class="icon-back"></span>
+    <img width="40" alt="Logo" src="../assets/images/testcakes.jpg" />
+    <span>Homemade Cakes</span>
+    <span
+      class="text-menu"
+      target="_blank"
+      rel="noopener"
+      (click)="backHome()"
+    >
+      Home
+    </span>
+    <div class="spacer"></div>
+    <span
+    class="text-menu"
+    target="_blank"
+    rel="noopener"
+    (click)="click('4')"
+  >
+    Thống kê 1
+  </span>
+    <span
+      class="text-menu"
+      target="_blank"
+      rel="noopener"
+      (click)="click('1')"
+    >
+    Thống kê 2
+    </span>
+    <span
+      class="text-menu"
+      target="_blank"
+      rel="noopener"
+      (click)="click('2')"
+    >
+      Thống kê 3
+    </span>
+
+    
+  </div>
+  <div class="content-layout" role="main">
+    <!-- <main> -->
+        <!-- Nơi các component con sẽ được vẽ -->
+        <router-outlet></router-outlet>
+      <!-- </main> -->
+  </div>
+
+ 

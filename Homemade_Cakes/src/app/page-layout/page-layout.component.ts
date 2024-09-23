@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UsersServiceService } from '../service/user-service/users-service.service';
+import { ManagerNumberService } from '../modules/manager-number/manager-number.service';
 
 @Component({
   selector: 'app-page-layout',
@@ -23,35 +24,36 @@ export class PageLayoutComponent implements OnInit {
     autoplay: true,
     autoplaySpeed: 5000,
     pauseOnHover: true,
-    infinite : true ,
-    responsive :
-    [
+    infinite: true,
+    responsive: [
       {
-        breakpoint :992,
-        settings :{
+        breakpoint: 992,
+        settings: {
           arrows: true,
-          infinite : true ,
-          slidesToShow : 3 ,
-          slidesToScoll : 3 ,
-        }
+          infinite: true,
+          slidesToShow: 3,
+          slidesToScoll: 3,
+        },
       },
       {
-        breakpoint :768,
-        settings :{
+        breakpoint: 768,
+        settings: {
           arrows: true,
-          infinite : true ,
-          slidesToShow : 1 ,
-          slidesToScoll : 1 ,
-        }
-      }
-    ]
+          infinite: true,
+          slidesToShow: 1,
+          slidesToScoll: 1,
+        },
+      },
+    ],
   };
 
-  isLogIn = true
+  isLogIn = true;
+  data: any;
 
   constructor(
-    private router : Router ,
-    private userService : UsersServiceService
+    private router: Router,
+    private userService: UsersServiceService,
+    private smService : ManagerNumberService
   ) {}
   addSlide() {
     this.slides.push({ img: 'http://placehold.it/350x150/777777' });
@@ -73,27 +75,27 @@ export class PageLayoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-  this.userService.setCookie(`timeLogin = ${new Date()}`,'/home')
+    this.userService.setCookie(`timeLogin = ${new Date()}`, '/home');
+    this.data = this.smService.data
   }
 
-
-
-  click(e :any){
-    let url = 'login';
-   switch(e){
-    case '1':
-      break;
+  click(e: any) {
+    let url = '/login';
+    switch (e) {
+      case '1':
+        break;
       case '2':
         break;
-        case '3':
-          break;
-          case '4':
-            url = 'managernumbers'
-            break;
-   }
+      case '3':
+        break;
+      case '4':
+        url = '/number/managernumbers/views';
+        break;
+    }
+   console.log('url :',url)
+   this.router.navigate([url]);
 
-
-    this.router.navigate(['/', url])
+    //this.router.navigate(['/', url]);
     // this.router.navigateByUrl('/loginsssss').then(nav => {
     //   console.log(nav); // true if navigation is successful
     // }, err => {
