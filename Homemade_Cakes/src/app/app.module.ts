@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { PageLayoutComponent } from './page-layout/page-layout.component';
 import { SlickCarouselModule } from 'ngx-slick-carousel';
 
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ServiceModule } from './page-layout/service.module';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
@@ -70,6 +70,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     AppRoutingModule,
     ServiceModule,
     FormsModule ,
+    ReactiveFormsModule, //de nhan gia tri form
     BrowserAnimationsModule, //Thay đổi trạng thái mượt mà
     CommonModule,
     NgxUiLoaderModule.forRoot(ngxUiLoaderConfig),//caì đặt loadder (cái nháy nháy ở góc)
