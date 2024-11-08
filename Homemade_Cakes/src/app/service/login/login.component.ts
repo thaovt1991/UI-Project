@@ -128,17 +128,17 @@ export class LoginComponent implements OnInit {
 
   loginAccount(e) {
     //window.location.href = "/login"
-    let date = new Date();
-    date.setTime(Date.now() + 36000); //thoi gian duy tri cookies - expires expires
-    let expires = date.toUTCString();
-    // this.usersService.setCookie(`userName = ${e?.userName}`,null, null,expiresm)
-    this.usersService.setCookie(
-      `userName = ${e?.userName}`,
-      null,
-      null,
-      null,
-      3600
-    );
+    // let date = new Date();
+    // date.setTime(Date.now() + 36000); //thoi gian duy tri cookies - expires expires
+    // let expires = date.toUTCString();
+    // // this.usersService.setCookie(`userName = ${e?.userName}`,null, null,expiresm)
+    // this.usersService.setCookie(
+    //   `userName = ${e?.userName}`,
+    //   null,
+    //   null,
+    //   null,
+    //   3600
+    // );
     //this.usersService.exec("HomemadeCakes","HomemadeCakes.Business.UserLogBusiness","LoginAsync",[ e?.userName,e?.password]).subscribe(res=>{
     let objecLogIn = {
       UserID: e?.userName,
@@ -150,8 +150,9 @@ export class LoginComponent implements OnInit {
        if(!res.error){
         debugger
 
-      this.usersService.setCookie(`userId = ${res?.userId}`,null, null,null,res.maxage)
-       this.router.navigate(['/home']);
+      this.usersService.setCookie(`userId = ${res?.userId}`,null, null,null,res?.maxage);
+      localStorage.setItem('token',res?.token)
+      this.router.navigate(['/home']);
        }else {
         //Thong bao
        console.log(res?.message)

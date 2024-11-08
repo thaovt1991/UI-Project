@@ -24,6 +24,7 @@ import {
 } from 'ngx-ui-loader';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ManagerCakesComponent } from './modules/manager-cakes/manager-cakes.component';
+import { Interceptor } from './interceptor';
 
 
 
@@ -88,8 +89,8 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
   //  // deps: [AuthService, AppConfigService],
   // },
   // { provide: RouteReuseStrategy}
-  ///{ provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }, - xem lại chỗ chặn quuyeefn này
   //{ provide: RouteReuseStrategy, useClass: CacheRouteReuseStrategy }, //--core dx có xem nó làm gì
+  { provide: HTTP_INTERCEPTORS, useClass: Interceptor, multi: true } //chặn quyen truy cap neu ko co token
   ],
   bootstrap: [AppComponent],
   schemas: [

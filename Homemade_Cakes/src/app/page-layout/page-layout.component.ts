@@ -87,6 +87,7 @@ export class PageLayoutComponent implements OnInit {
       case '2':
         break;
       case '3':
+        localStorage.clear();
         break;
       case '4':
         url = '/number/managernumbers/views';

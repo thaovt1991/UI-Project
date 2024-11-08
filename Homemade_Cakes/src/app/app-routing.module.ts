@@ -3,6 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { PageLayoutComponent } from './page-layout/page-layout.component';
 import { LoginComponent } from './service/login/login.component';
 
+import { authGuard } from './auth.guard';
+
 // var childAuthRoutes: Routes = [
 //   {
 //     path: 'number',
@@ -17,6 +19,7 @@ import { LoginComponent } from './service/login/login.component';
 export const routes: Routes = [
   {
     path: 'home',
+    canActivate: [authGuard],
     component: PageLayoutComponent,
     pathMatch: 'full',
   },
@@ -27,7 +30,7 @@ export const routes: Routes = [
   },
   {
     path: 'number',
-    // canActivate: [AuthGuard],
+    canActivate: [authGuard],
     loadChildren: () =>
       import('./modules/manager-number/manager-number.module').then(
         (m) => m.ManagerNumberModule

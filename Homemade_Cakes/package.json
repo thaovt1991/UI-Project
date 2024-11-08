@@ -25,6 +25,8 @@
     "angular-responsive-carousel": "^2.1.2",
     "bootstrap": "^5.3.3",
     "crypto-js": "^4.2.0",
+    "jwt-decode": "^4.0.0",
+    "moment": "^2.30.1",
     "ngx-skeleton-loader": "^9.0.0",
     "ngx-slick-carousel": "^17.0.0",
     "ngx-ui-loader": "^13.0.0",
