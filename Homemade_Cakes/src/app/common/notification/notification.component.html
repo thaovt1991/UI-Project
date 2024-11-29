@@ -1,0 +1,9 @@
+<div class="notification-container">
+  <div [class]="backgroundbyType()" *ngFor="let notification of notifications">
+    {{ notification.message }}
+
+    <button class="close-btn" (click)="removeNotification(notification)">
+      ×
+    </button>
+  </div>
+</div>

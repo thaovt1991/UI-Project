@@ -50,6 +50,7 @@ export class PageLayoutComponent implements OnInit {
   isLogIn = true;
   data: any;
 
+
   constructor(
     private router: Router,
     private userService: UsersServiceService,
@@ -83,6 +84,7 @@ export class PageLayoutComponent implements OnInit {
     let url = '/login';
     switch (e) {
       case '1':
+
         break;
       case '2':
         break;
@@ -104,4 +106,22 @@ export class PageLayoutComponent implements OnInit {
     //   this.router.navigate(['/', 'login'])
     // });;
   }
+
+  //#region  Chát
+  isChatOpen = false; // Trạng thái mở/đóng popup chat
+  messages: string[] = []; // Danh sách tin nhắn
+  userInput: string = ''; // Nội dung nhập từ người dùng
+ // Mở hoặc đóng chat
+ toggleChat() {
+  this.isChatOpen = !this.isChatOpen;
+}
+
+// Gửi tin nhắn
+sendMessage() {
+  if (this.userInput.trim()) {
+    this.messages.push(this.userInput); // Thêm tin nhắn vào danh sách
+    this.userInput = ''; // Xóa nội dung input sau khi gửi
+  }
+}
+  //#endregion
 }

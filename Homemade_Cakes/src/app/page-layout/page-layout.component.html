@@ -88,3 +88,23 @@ Log out
     </ngx-slick-carousel>
   </div>
 </div>
+
+<div class="chat-popup" [class.open]="isChatOpen">
+  <div class="chat-header" (click)="toggleChat()">
+    Chat with us
+    <span class="close-btn" *ngIf="isChatOpen">x</span>
+  </div>
+  <div class="chat-body" *ngIf="isChatOpen">
+    <div class="messages">
+      <div class="message" *ngFor="let msg of messages">
+        {{ msg }}
+      </div>
+    </div>
+    <input
+      type="text"
+      [(ngModel)]="userInput"
+      (keyup.enter)="sendMessage()"
+      placeholder="Type your message..."
+    />
+  </div>
+</div>

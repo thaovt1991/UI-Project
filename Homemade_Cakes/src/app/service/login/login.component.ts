@@ -13,6 +13,7 @@ import { UsersServiceService } from '../user-service/users-service.service';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { NotificationComponent } from 'src/app/common/notification/notification.component';
 
 @Component({
   selector: 'app-login',
@@ -20,6 +21,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
+  @ViewChild("noti") noti : NotificationComponent
   decrypted = '';
   request = '';
   responce = '';
@@ -81,7 +83,7 @@ export class LoginComponent implements OnInit {
     private changeDef: ChangeDetectorRef,
     private usersService: UsersServiceService,
     private router: Router,
-    private renderer: Renderer2 //bo sung java script
+    private renderer: Renderer2 ,//bo sung java script,
   ) {}
 
   ngOnInit(): void {
@@ -126,6 +128,7 @@ export class LoginComponent implements OnInit {
     }).toString(CryptoJS.enc.Utf8);
   }
 
+  //admin- admin@123
   loginAccount(e) {
     //window.location.href = "/login"
     // let date = new Date();
@@ -155,6 +158,7 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/home']);
        }else {
         //Thong bao
+        this.noti.addNotification(res?.message,'2')
        console.log(res?.message)
        }
     })

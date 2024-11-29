@@ -2,8 +2,9 @@
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+//environment.ts (Môi trường phát triển):
 export const environment = {
-  production: false,
+  production: false,// Ứng dụng đang chạy trong môi trường phát triển.
   apiUrl: 'https://localhost:5001/api' , //Chú ý port -s va  ko s
   tenant :'mystore',
   shareCookieDomain :'domain =.homemadecakes.com' //de truy van ten mien chinh va mien phu vào cung 1 cookie

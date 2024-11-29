@@ -25,6 +25,7 @@ import {
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ManagerCakesComponent } from './modules/manager-cakes/manager-cakes.component';
 import { Interceptor } from './interceptor';
+import { NotificationComponent } from './common/notification/notification.component';
 
 
 
@@ -64,6 +65,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     AuthComponent,
    // ManagerNumberComponent,
     ManagerCakesComponent,
+   NotificationComponent,
   ],
   imports: [
     HttpClientModule,
