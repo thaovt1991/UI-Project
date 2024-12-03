@@ -9,6 +9,7 @@
     "test": "ng test"
   },
   "private": true,
+ 
   "dependencies": {
     "@angular/animations": "^16.1.0",
     "@angular/common": "^16.1.0",
@@ -24,6 +25,7 @@
     "@types/crypto-js": "^4.2.2",
     "angular-responsive-carousel": "^2.1.2",
     "bootstrap": "^5.3.3",
+    "@fortawesome/fontawesome-free": "^6.4.0", 
     "crypto-js": "^4.2.0",
     "jwt-decode": "^4.0.0",
     "moment": "^2.30.1",

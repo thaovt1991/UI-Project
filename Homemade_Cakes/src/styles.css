@@ -11,6 +11,8 @@
 @import '../node_modules/@syncfusion/ej2-notifications/styles/material.css';
 @import '../node_modules/@syncfusion/ej2-angular-grids/styles/material.css';
 
+/* Thêm các url import */
+
 .slick-prev:before,
 .slick-next:before {
   color: black !important;

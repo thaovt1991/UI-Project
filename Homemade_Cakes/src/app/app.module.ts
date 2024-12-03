@@ -27,6 +27,8 @@ import { ManagerCakesComponent } from './modules/manager-cakes/manager-cakes.com
 import { Interceptor } from './interceptor';
 import { NotificationComponent } from './common/notification/notification.component';
 
+import { MessengerComponent } from './common/messenger/messenger.component';
+
 
 
 const ngxUiLoaderConfig: NgxUiLoaderConfig = {
@@ -66,6 +68,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
    // ManagerNumberComponent,
     ManagerCakesComponent,
    NotificationComponent,
+   MessengerComponent,
   ],
   imports: [
     HttpClientModule,

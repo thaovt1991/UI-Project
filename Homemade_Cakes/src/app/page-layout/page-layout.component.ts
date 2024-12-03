@@ -49,6 +49,7 @@ export class PageLayoutComponent implements OnInit {
 
   isLogIn = true;
   data: any;
+  isOpenContact = false
 
 
   constructor(
@@ -84,7 +85,8 @@ export class PageLayoutComponent implements OnInit {
     let url = '/login';
     switch (e) {
       case '1':
-
+        this.isOpenContact = true
+        return
         break;
       case '2':
         break;
@@ -112,8 +114,17 @@ export class PageLayoutComponent implements OnInit {
   messages: string[] = []; // Danh sách tin nhắn
   userInput: string = ''; // Nội dung nhập từ người dùng
  // Mở hoặc đóng chat
- toggleChat() {
+toggleChat(element) {
   this.isChatOpen = !this.isChatOpen;
+  // if(element=='all' && !this.isChatOpen){
+  //   this.isChatOpen = true;
+  // }else if(element=='icon' && this.isChatOpen)  this.isChatOpen = false;
+ 
+}
+
+closeChat(){
+  this.isChatOpen = false;
+  this.isOpenContact = false;
 }
 
 // Gửi tin nhắn
