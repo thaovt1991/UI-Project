@@ -130,6 +130,7 @@ export class LoginComponent implements OnInit {
 
   //admin- admin@123
   loginAccount(e) {
+     this.router.navigate(['/home']);
     //window.location.href = "/login"
     // let date = new Date();
     // date.setTime(Date.now() + 36000); //thoi gian duy tri cookies - expires expires
@@ -143,25 +144,25 @@ export class LoginComponent implements OnInit {
     //   3600
     // );
     //this.usersService.exec("HomemadeCakes","HomemadeCakes.Business.UserLogBusiness","LoginAsync",[ e?.userName,e?.password]).subscribe(res=>{
-    let objecLogIn = {
-      UserID: e?.userName,
-      Password: e?.password,
-      RememberMe: true,
-    };
-     //cach 1
-      this.usersService.logInAsync(objecLogIn).subscribe(res=>{
-       if(!res.error){
-        debugger
+    // let objecLogIn = {
+    //   UserID: e?.userName,
+    //   Password: e?.password,
+    //   RememberMe: true,
+    // };
+    //  //cach 1
+    //   this.usersService.logInAsync(objecLogIn).subscribe(res=>{
+    //    if(!res.error){
+    //     debugger
 
-      this.usersService.setCookie(`userId = ${res?.userId}`,null, null,null,res?.maxage);
-      localStorage.setItem('token',res?.token)
-      this.router.navigate(['/home']);
-       }else {
-        //Thong bao
-        this.noti.addNotification(res?.message,'2')
-       console.log(res?.message)
-       }
-    })
+    //   this.usersService.setCookie(`userId = ${res?.userId}`,null, null,null,res?.maxage);
+    //   localStorage.setItem('token',res?.token)
+    //   this.router.navigate(['/home']);
+    //    }else {
+    //     //Thong bao
+    //     this.noti.addNotification(res?.message,'2')
+    //    console.log(res?.message)
+    //    }
+    // })
 
     //cach 2
     // this.usersService

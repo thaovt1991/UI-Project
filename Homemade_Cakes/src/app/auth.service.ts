@@ -9,6 +9,7 @@ import moment from 'moment';
 export class AuthService {
   constructor() {}
   isLoggedIn() {
+    return true; //test
     let token = localStorage.getItem('token');
     if (token) {
       let info = this.decodeToken(token);
