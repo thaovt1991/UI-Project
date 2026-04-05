@@ -12,7 +12,7 @@
     </span>
     <div class="spacer"></div>
     <span
-    class="text-menu"
+    class="text-menu {{crrMenu=='0'?'actived' :''}}"
     target="_blank"
     rel="noopener"
     (click)="click('0')"
@@ -20,7 +20,7 @@
     Thống kê 1
   </span>
     <span
-      class="text-menu"
+      class="text-menu {{crrMenu=='1'?'actived' :''}}"
       target="_blank"
       rel="noopener"
       (click)="click('1')"
@@ -28,7 +28,7 @@
     Thống kê 2
     </span>
     <span
-      class="text-menu"
+      class="text-menu {{crrMenu=='2'?'actived' :''}}"
       target="_blank"
       rel="noopener"
       (click)="click('2')"
@@ -36,7 +36,7 @@
       Thống kê 3
     </span>
   <span
-      class="text-menu"
+      class="text-menu {{crrMenu=='3'?'actived' :''}}"
       target="_blank"
       rel="noopener"
       (click)="click('3')"

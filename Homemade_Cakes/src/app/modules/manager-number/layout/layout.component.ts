@@ -8,14 +8,15 @@ import { ManagerNumberService } from '../manager-number.service';
   styleUrls: ['./layout.component.css']
 })
 export class LayoutComponent {
-
+  crrMenu='0'
   constructor(private router :Router,
     private serviceNum : ManagerNumberService
   ){
 
   }
   click(e){
-    this.serviceNum.menuClick.next(e)
+    this.serviceNum.menuClick.next(e);
+    this.crrMenu = e
   let url =''
     switch(e){
       case'1':
