@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import {
   VirtualScrollService,
   SelectionService,
@@ -18,6 +18,7 @@ import {
 
 import { L10n, setCulture, EmitType } from '@syncfusion/ej2-base';
 import { ManagerNumberService } from './manager-number.service';
+import { BehaviorSubject } from 'rxjs';
 // import { getTradeData } from './data';
 // import { SBDescriptionComponent } from '../common/dp.component';
 // import { SBActionDescriptionComponent } from '../common/adp.component';
@@ -25,7 +26,7 @@ import { ManagerNumberService } from './manager-number.service';
 @Component({
   selector: 'app-manager-number',
   templateUrl: './manager-number.component.html',
-  styleUrls: ['./manager-number.component.css'],
+  styleUrls: ['./manager-number.component.scss'],
 
 })
 export class ManagerNumberComponent implements OnInit {
@@ -45,8 +46,11 @@ export class ManagerNumberComponent implements OnInit {
   initial: boolean = true;
   pageSettings: { pageCount: number; };
   loadingIndicator: { indicatorType: string; };
+  menu = ''
 
-  constructor(private serviceNum: ManagerNumberService) {
+  constructor(
+    private serviceNum: ManagerNumberService,
+  private changdef : ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -54,6 +58,13 @@ export class ManagerNumberComponent implements OnInit {
     this.pageSettings = { pageCount: 3 };
     // this.data = new DataManager({ url: 'https://services.syncfusion.com/angular/production/api/orders', adaptor: new UrlAdaptor });
     this.loadingIndicator = { indicatorType: 'Spinner' };
+    //khai baaso
+   this.serviceNum.menuClick.subscribe(e=>{
+    this.menu = e;
+    this.changdef.detectChanges();
+   })
+   this.createArr();
+
   }
 
   ngOnDestroy(): void {
@@ -297,4 +308,34 @@ export class ManagerNumberComponent implements OnInit {
 //         (this.grid as GridComponent).refreshColumns();
 //     }
 // } 
+//#region  reset 
+arrNumCurrent:any[]=[]
+
+reset(){
+  localStorage.removeItem('arrNum');
+ this.createArr();
+}
+createArr(){
+  if(localStorage.getItem('arrNum')){
+    this.arrNumCurrent = JSON.parse(localStorage.getItem('arrNum'));
+    return
+  }
+   this.arrNumCurrent=[]
+  for(var i=0; i<100;i++){
+    let num = i.toString();
+    if(i<10) num ='0'+i
+    this.arrNumCurrent.push({
+      value: num,
+      isExited :false
+    })
+  }
+}
+clickNum(idx){
+ this.arrNumCurrent[idx].isExited = !this.arrNumCurrent[idx].isExited;
+ localStorage.setItem('arrNum',JSON.stringify(this.arrNumCurrent))
+}
+}
+export class NumClass{
+ public value : string;
+ public isExited:boolean = false;
 }

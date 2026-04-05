@@ -1,0 +1,46 @@
+.d-flex{
+  position: flex;
+}
+
+/* Container bao ngoài */
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;     /* Cho phép các ô nhảy xuống hàng mới */
+  width: 100%;         /* Đảm bảo container chiếm hết chiều rộng */
+  border-left: 1px solid #000;  /* Viền bên trái để tránh bị trùng viền */
+  border-top: 1px solid #000;   /* Viền phía trên */
+}
+
+/* Thẻ bao quanh bởi *ngFor */
+.grid-container > div {
+  flex: 0 0 10%;       /* Mỗi ô chiếm chính xác 10% chiều rộng (10 ô/hàng) */
+  box-sizing: border-box;
+}
+
+/* Style cho chính ô số (num) */
+.num {
+  height: 50px;        /* Bạn có thể chỉnh độ cao tùy ý */
+  display: flex;       /* Dùng flexbox để căn giữa chữ */
+  justify-content: center; /* Căn giữa ngang */
+  align-items: center;     /* Căn giữa dọc */
+  
+  cursor: pointer;
+  border-right: 1px solid #000; 
+  border-bottom: 1px solid #000;
+  box-sizing: border-box;
+}
+
+/* Màu sắc dựa trên trạng thái */
+.exited {
+  background-color: rgb(228, 104, 104) !important;
+}
+
+
+.not-exited {
+ background-color: rgb(105, 237, 114) !important;
+}
+
+.css-num {
+  font-weight: bold;
+  font-size: 1.1em;
+}

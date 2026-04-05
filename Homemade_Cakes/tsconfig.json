@@ -23,7 +23,7 @@
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
-    //"strict": true, //Bật các kiểm tra kiểu nghiêm ngặt. - tắt đi nó ko báo lỗi đỏ nữa (Lỗi đỏ khi tạo model vào fun không khai báo kiểu dữ liệu)
+    "strict": false, //Bật các kiểm tra kiểu nghiêm ngặt. - tắt đi nó ko báo lỗi đỏ nữa (Lỗi đỏ khi tạo model vào fun không khai báo kiểu dữ liệu)
     "noImplicitOverride": true, //khi làm việc với các lớp và kế thừa, chúng ta thường override (ghi đè) các phương thức từ lớp cha. Tùy chọn noImplicitOverride trong tsconfig.json giúp TypeScript đảm bảo rằng việc override này được thực hiện một cách rõ ràng và chính xác.
     //"noPropertyAccessFromIndexSignature": true, //một cấu hình liên quan đến cách TypeScript kiểm tra và báo lỗi khi bạn truy cập vào các thuộc tính của một đối tượng thông qua ký hiệu ngoặc vuông ([]) => bỏ đi để có thể tùy ý
     "noImplicitReturns": true, //báo lỗi nếu ko return với các hàm khác "void" - Trong TypeScript, khi định nghĩa một hàm, chúng ta thường khai báo kiểu dữ liệu trả về của hàm đó. Tùy chọn noImplicitReturns trong tsconfig.json giúp TypeScript đảm bảo rằng mọi nhánh của hàm đều trả về giá trị có kiểu phù hợp với kiểu trả về đã khai báo
