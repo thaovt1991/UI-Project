@@ -12,6 +12,7 @@
       <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
 
       <div class="button-group">
+         <div *ngIf="loading" class="loading-text">{{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}</div>
         <input type="text" class="paste-input ms-2" placeholder="Click vào đây rồi nhấn Ctrl+V để dán ảnh"
           (paste)="onPaste($event)" [readonly]="loading" />
         <button (click)="fileInput.click()" [disabled]="loading" class="btn-primary ms-2">
@@ -23,7 +24,7 @@
         </button>
       </div>
     </ng-container>
-     <div *ngIf="loading" class="loading-text">{{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}</div>
+    
   </div>
 </div>
 <div class="content-layout">

@@ -47,7 +47,7 @@
 ///GROP
 button-group {
   display: flex;       /* Kích hoạt flexbox */
-  gap: 10px;          /* Tạo khoảng cách giữa 2 nút */
+  gap: 20px;          /* Tạo khoảng cách giữa 2 nút */
   margin-bottom: 15px; /* Khoảng cách với lưới số bên dưới */
   align-items: center; /* Căn giữa 2 nút theo chiều dọc nếu chiều cao khác nhau */
 }
@@ -121,4 +121,5 @@ button {
   color: #ff9800;
   font-weight: bold;
   margin-bottom: 10px;
+  float: left;
 }
