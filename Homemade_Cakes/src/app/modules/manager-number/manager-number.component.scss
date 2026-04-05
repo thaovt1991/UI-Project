@@ -44,3 +44,81 @@
   font-weight: bold;
   font-size: 1.1em;
 }
+///GROP
+button-group {
+  display: flex;       /* Kích hoạt flexbox */
+  gap: 10px;          /* Tạo khoảng cách giữa 2 nút */
+  margin-bottom: 15px; /* Khoảng cách với lưới số bên dưới */
+  align-items: center; /* Căn giữa 2 nút theo chiều dọc nếu chiều cao khác nhau */
+}
+
+/* Tùy chỉnh thêm cho nút bấm đẹp hơn (tùy chọn) */
+button {
+  padding: 8px 16px;
+  cursor: pointer;
+  border: 1px solid #333;
+  background-color: #fff;
+  transition: all 0.2s;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+/* Nút Chính (Chọn ảnh / Quét ảnh) */
+.btn-primary {
+  background-color: #007bff; /* Màu xanh dương */
+  color: white;
+  border: 1px solid #0069d9;
+
+  &:hover:not(:disabled) {
+    background-color: #0062cc;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  }
+}
+
+/* Nút Reset */
+.btn-reset {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+
+  &:hover:not(:disabled) {
+    background-color: #e2e6ea;
+    border-color: #bbb;
+  }
+}
+
+.paste-input {
+  flex: 1; /* Chiếm hết chiều rộng còn lại */
+  padding: 10px;
+  border: 2px dashed #007bff;
+  border-radius: 4px;
+  outline: none;
+  background-color: #fcfcfc;
+  transition: all 0.3s;
+
+  &:focus {
+    border-style: solid;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+  }
+
+  &::placeholder {
+    color: #007bff;
+    font-size: 0.9em;
+  }
+}
+
+.loading-text {
+  color: #ff9800;
+  font-weight: bold;
+  margin-bottom: 10px;
+}

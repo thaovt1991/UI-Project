@@ -1,7 +1,29 @@
 <div class="mb-5">
   <div style="float: right">
     <button *ngIf="menu!='3'">Thêm</button>
-     <button *ngIf="menu=='3'" (click)="reset()">Reset</button>
+    <ng-container *ngIf="menu=='3'">
+      <!-- <div class="upload-box">
+    <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
+    <button (click)="fileInput.click()" [disabled]="loading">
+      {{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}
+    </button>
+  </div> -->
+      <!-- <button  (click)="reset()">Reset</button> -->
+      <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
+
+      <div class="button-group">
+        <input type="text" class="paste-input ms-2" placeholder="Click vào đây rồi nhấn Ctrl+V để dán ảnh"
+          (paste)="onPaste($event)" [readonly]="loading" />
+        <button (click)="fileInput.click()" [disabled]="loading" class="btn-primary ms-2">
+          Chọn ảnh OCR
+          <!-- {{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }} -->
+        </button>
+        <button (click)="reset()" class="btn-reset">
+          Reset
+        </button>
+      </div>
+    </ng-container>
+     <div *ngIf="loading" class="loading-text">{{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}</div>
   </div>
 </div>
 <div class="content-layout">
@@ -104,7 +126,7 @@
 
   <ng-template #viewMenu3>
     <div class="d-flex">
-    
+
     </div>
     <div class="grid-container">
       <div *ngFor="let num of arrNumCurrent; let i = index">
