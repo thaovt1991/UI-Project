@@ -313,8 +313,17 @@ export class ManagerNumberComponent implements OnInit {
   arrNumCurrent: any[] = []
 
   reset() {
-    localStorage.removeItem('arrNum');
-    this.createArr();
+    // Hiển thị hộp thoại hỏi Yes/No của trình duyệt
+  const confirmReset = confirm("Bạn có chắc chắn muốn xóa hết kết quả đã quét không?");
+
+  if (confirmReset) {
+    // Nếu người dùng chọn OK mới thực hiện reset
+    this.arrNumCurrent.forEach(item => item.isExited = false);
+     localStorage.removeItem('arrNum');
+    // this.createArr();
+    console.log("Đã reset bảng số.");
+  }
+   
   }
   createArr() {
     if (localStorage.getItem('arrNum')) {
