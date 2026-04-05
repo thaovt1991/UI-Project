@@ -9,10 +9,11 @@
     </button>
   </div> -->
       <!-- <button  (click)="reset()">Reset</button> -->
+       
       <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
-
+              <span class="count">{{ 'Số lần OCR : ' + countOCR }}</span>
       <div class="button-group">
-         <div *ngIf="loading" class="loading-text">{{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}</div>
+          <div *ngIf="loading" class="loading-text">{{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}</div>
         <input type="text" class="paste-input ms-2" placeholder="Click vào đây rồi nhấn Ctrl+V để dán ảnh"
           (paste)="onPaste($event)" [readonly]="loading" />
         <button (click)="fileInput.click()" [disabled]="loading" class="btn-primary ms-2">

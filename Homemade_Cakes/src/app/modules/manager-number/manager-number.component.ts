@@ -47,7 +47,8 @@ export class ManagerNumberComponent implements OnInit {
   initial: boolean = true;
   pageSettings: { pageCount: number; };
   loadingIndicator: { indicatorType: string; };
-  menu = ''
+  menu = '';
+  countOCR =0
 
   constructor(
     private serviceNum: ManagerNumberService,
@@ -320,6 +321,8 @@ export class ManagerNumberComponent implements OnInit {
     // Nếu người dùng chọn OK mới thực hiện reset
     this.arrNumCurrent.forEach(item => item.isExited = false);
      localStorage.removeItem('arrNum');
+     this.countOCR =0
+     localStorage.removeItem('countOCR');
     // this.createArr();
     console.log("Đã reset bảng số.");
   }
@@ -328,7 +331,8 @@ export class ManagerNumberComponent implements OnInit {
   createArr() {
     if (localStorage.getItem('arrNum')) {
       this.arrNumCurrent = JSON.parse(localStorage.getItem('arrNum'));
-      return
+      let coutOCR = localStorage.getItem('countOCR');
+      this.countOCR = coutOCR? Number.parseInt(coutOCR) :0;
     }
     this.arrNumCurrent = []
     for (var i = 0; i < 100; i++) {
@@ -408,7 +412,9 @@ export class ManagerNumberComponent implements OnInit {
         item.isExited = true;
       }
     });
-    localStorage.setItem('arrNum', JSON.stringify(this.arrNumCurrent))
+    localStorage.setItem('arrNum', JSON.stringify(this.arrNumCurrent));
+    this.countOCR +=1;
+    localStorage.setItem('countOCR', this.countOCR.toString());
     alert(`Xong! Đã quét và đối soát ${finalNumbers.length} con số.`);
   }
 
