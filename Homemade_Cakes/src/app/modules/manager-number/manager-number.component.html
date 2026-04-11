@@ -1,31 +1,36 @@
-<div class="mb-5">
-  <div style="float: right">
-    <button *ngIf="menu!='3'">Thêm</button>
-    <ng-container *ngIf="menu=='3'">
-      <!-- <div class="upload-box">
+<div class="mb-3 row">
+  <div class="col-4">
+    <div *ngIf="menu=='3'" class="count ">{{ 'Số lần OCR : ' + countOCR }}</div>
+  </div>
+  <div class="col-8">
+    <div style="float: right">
+      <button *ngIf="menu!='3'">Thêm</button>
+      <ng-container *ngIf="menu=='3'">
+        <!-- <div class="upload-box">
     <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
     <button (click)="fileInput.click()" [disabled]="loading">
       {{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}
     </button>
   </div> -->
-      <!-- <button  (click)="reset()">Reset</button> -->
-       
-      <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
-              <span class="count">{{ 'Số lần OCR : ' + countOCR }}</span>
-      <div class="button-group">
-          <div *ngIf="loading" class="loading-text">{{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}</div>
-        <input type="text" class="paste-input ms-2" placeholder="Click vào đây rồi nhấn Ctrl+V để dán ảnh"
-          (paste)="onPaste($event)" [readonly]="loading" />
-        <button (click)="fileInput.click()" [disabled]="loading" class="btn-primary ms-2">
-          Chọn ảnh OCR
-          <!-- {{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }} -->
-        </button>
-        <button (click)="reset()" class="btn-reset">
-          Reset
-        </button>
-      </div>
-    </ng-container>
-    
+        <!-- <button  (click)="reset()">Reset</button> -->
+
+
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden>
+        <div class="button-group">
+          <div *ngIf="loading" class="loading-text">{{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }}
+          </div>
+          <input type="text" class="paste-input ms-2" placeholder="Click vào đây rồi nhấn Ctrl+V để dán ảnh"
+            (paste)="onPaste($event)" [readonly]="loading" />
+          <button (click)="fileInput.click()" [disabled]="loading" class="btn-primary ms-2">
+            Chọn ảnh OCR
+            <!-- {{ loading ? 'Đang quét ' + progress + '%' : 'Chọn ảnh kết quả' }} -->
+          </button>
+          <button (click)="reset()" class="btn-reset">
+            Reset
+          </button>
+        </div>
+      </ng-container>
+    </div>
   </div>
 </div>
 <div class="content-layout">

@@ -48,7 +48,7 @@ export class ManagerNumberComponent implements OnInit {
   pageSettings: { pageCount: number; };
   loadingIndicator: { indicatorType: string; };
   menu = '';
-  countOCR =0
+  countOCR = 0
 
   constructor(
     private serviceNum: ManagerNumberService,
@@ -315,24 +315,24 @@ export class ManagerNumberComponent implements OnInit {
 
   reset() {
     // Hiển thị hộp thoại hỏi Yes/No của trình duyệt
-  const confirmReset = confirm("Bạn có chắc chắn muốn xóa hết kết quả đã quét không?");
+    const confirmReset = confirm("Bạn có chắc chắn muốn xóa hết kết quả đã quét không?");
 
-  if (confirmReset) {
-    // Nếu người dùng chọn OK mới thực hiện reset
-    this.arrNumCurrent.forEach(item => item.isExited = false);
-     localStorage.removeItem('arrNum');
-     this.countOCR =0
-     localStorage.removeItem('countOCR');
-    // this.createArr();
-    console.log("Đã reset bảng số.");
-  }
-   
+    if (confirmReset) {
+      // Nếu người dùng chọn OK mới thực hiện reset
+      this.arrNumCurrent.forEach(item => item.isExited = false);
+      localStorage.removeItem('arrNum');
+      this.countOCR = 0
+      localStorage.removeItem('countOCR');
+      // this.createArr();
+      console.log("Đã reset bảng số.");
+    }
+
   }
   createArr() {
     if (localStorage.getItem('arrNum')) {
       this.arrNumCurrent = JSON.parse(localStorage.getItem('arrNum'));
       let coutOCR = localStorage.getItem('countOCR');
-      this.countOCR = coutOCR? Number.parseInt(coutOCR) :0;
+      this.countOCR = coutOCR ? Number.parseInt(coutOCR) : 0;
     }
     this.arrNumCurrent = []
     for (var i = 0; i < 100; i++) {
@@ -355,7 +355,98 @@ export class ManagerNumberComponent implements OnInit {
   async onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      await this.processOCR(file);
+       //await this.processOCR(file);
+      var image = await this.preprocessImage(file);
+      await this.processOCRBase64(image);
+    }
+  }
+  //Phosng to image
+  async preprocessImage(imageFile: File): Promise<string> {
+    return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+        
+        // Phóng to 2 lần là đủ, quan trọng là độ tương phản
+        canvas.width = img.width * 2;
+        canvas.height = img.height * 2;
+        ctx.imageSmoothingEnabled = false; 
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // BƯỚC QUAN TRỌNG: Lọc màu thông minh
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i+1], b = data[i+2];
+          
+          // Tính độ sáng (Luminance)
+          const brightness = (0.34 * r + 0.5 * g + 0.16 * b);
+          
+          // Xổ số thường có chữ Đỏ (Giải 8, ĐB) và chữ Đen (các giải còn lại)
+          // Ta ưu tiên giữ lại các vùng có màu đậm (chữ) và biến các vùng nhạt (nền, khung) thành trắng
+          // Ngưỡng 130 thường là "điểm ngọt" để tách chữ ra khỏi khung bảng
+          const isDark = brightness < 135; 
+          
+          const color = isDark ? 0 : 255;
+          data[i] = data[i + 1] = data[i + 2] = color;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        resolve(canvas.toDataURL('image/png', 1.0));
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(imageFile);
+  });
+  }
+  async processOCRBase64(imageFile64: string) {
+    this.loading = true;
+    this.progress = 0;
+
+    // 1. Khởi tạo với cấu hình hỗ trợ tiếng Việt (nếu cần đọc tiêu đề) hoặc chỉ eng cho nhanh
+    const worker = await createWorker('eng', 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          this.progress = Math.round(m.progress * 100);
+        }
+      },
+      //     //cau hinh tay
+      //     //     workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js',
+      //     // langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+      //     // corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0/tesseract-core.wasm.js',
+    });
+
+    try {
+      await worker.setParameters({
+        tessedit_char_whitelist: '0123456789',
+        // Chế độ 11 (Sparse text) hoặc 6 (Single block) 
+        // Với ảnh này bạn hãy thử lại với PSM 6 sau khi đã Scale ảnh
+        tessedit_pageseg_mode: '6' as any,
+        // Ép Tesseract coi mọi thứ là số, không đoán chữ
+        tessedit_ocr_engine_mode: '1' as any,
+      });
+
+      const { data: { text } } = await worker.recognize(imageFile64);
+
+    // Xử lý chuỗi kết quả: Thay vì match trực tiếp, ta làm sạch chuỗi rác trước
+    const cleanText = text.replace(/[^0-9\s]/g, '');
+    const matches = cleanText.split(/\s+/).filter(num => num.length >= 2);
+
+    if (matches.length > 0) {
+      this.updateNumbers(matches);
+      } else {
+        alert("Không tìm thấy số nào!");
+      }
+
+    } catch (error) {
+      console.error("OCR Error:", error);
+    } finally {
+      await worker.terminate();
+      this.loading = false;
     }
   }
 
@@ -364,34 +455,40 @@ export class ManagerNumberComponent implements OnInit {
     this.loading = true;
     this.progress = 0;
 
-    // Khởi tạo worker của Tesseract
+    // 1. Khởi tạo với cấu hình hỗ trợ tiếng Việt (nếu cần đọc tiêu đề) hoặc chỉ eng cho nhanh
     const worker = await createWorker('eng', 1, {
       logger: m => {
         if (m.status === 'recognizing text') {
           this.progress = Math.round(m.progress * 100);
         }
       },
-      //cau hinh tay
-      //     workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js',
-      // langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-      // corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0/tesseract-core.wasm.js',
+      //     //cau hinh tay
+      //     //     workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.0.0/dist/worker.min.js',
+      //     // langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+      //     // corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.0.0/tesseract-core.wasm.js',
     });
 
     try {
-      // Cấu hình chỉ đọc SỐ để tăng độ chính xác 200%
       await worker.setParameters({
         tessedit_char_whitelist: '0123456789',
+      // PSM 11 rất mạnh trong việc tìm các con số nằm rải rác trong bảng
+      tessedit_pageseg_mode: '11' as any,
       });
 
+      // Thực hiện nhận diện
       const { data: { text } } = await worker.recognize(imageFile);
 
-      // Dùng Regex tìm tất cả các chuỗi số có từ 2 chữ số trở lên
-      const matches = text.match(/\d{2,}/g);
+      // 1. Thay thế tất cả các ký tự không phải số bằng khoảng trắng
+      // 2. Tách chuỗi theo khoảng trắng để lấy các mảng số
+      const matches = text.replace(/[^\d]/g, ' ').split(/\s+/);
 
       if (matches) {
-        this.updateNumbers(matches);
+        // Loại bỏ các số rác (ví dụ ngày tháng 14022026 hoặc mã đài 2B7)
+        // Bạn có thể filter những số quá dài hoặc quá ngắn nếu cần
+        const cleanMatches = matches.filter(num => num.length >= 2 && num.length <= 6);
+        this.updateNumbers(cleanMatches);
       } else {
-        alert("Không tìm thấy số nào trong ảnh!");
+        alert("Không tìm thấy số nào!");
       }
 
     } catch (error) {
@@ -413,7 +510,7 @@ export class ManagerNumberComponent implements OnInit {
       }
     });
     localStorage.setItem('arrNum', JSON.stringify(this.arrNumCurrent));
-    this.countOCR +=1;
+    this.countOCR += 1;
     localStorage.setItem('countOCR', this.countOCR.toString());
     alert(`Xong! Đã quét và đối soát ${finalNumbers.length} con số.`);
   }
@@ -457,7 +554,7 @@ export class ManagerNumberComponent implements OnInit {
   // onPaste(event: ClipboardEvent) {
   //   // Kiểm tra xem dữ liệu dán có phải là file ảnh không
   //   const items = event.clipboardData?.items;
-    
+
   //   if (!items || this.loading) return; // Nếu đang quét thì không cho dán
 
   //   for (let i = 0; i < items.length; i++) {
@@ -486,7 +583,7 @@ export class ManagerNumberComponent implements OnInit {
         if (file) {
           // Ngăn việc dán text vào ô input (nếu muốn)
           event.preventDefault();
-          
+
           // 3. Tiến hành OCR
           await this.processOCR(file);
           break;
