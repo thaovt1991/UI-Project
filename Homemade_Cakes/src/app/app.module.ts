@@ -28,6 +28,7 @@ import { Interceptor } from './interceptor';
 import { NotificationComponent } from './common/notification/notification.component';
 
 import { MessengerComponent } from './common/messenger/messenger.component';
+import { ManagerCoinComponent } from './modules/manager-coin/manager-coin.component';
 
 
 
@@ -69,6 +70,7 @@ const ngxUiLoaderConfig: NgxUiLoaderConfig = {
     ManagerCakesComponent,
    NotificationComponent,
    MessengerComponent,
+   ManagerCoinComponent,
   ],
   imports: [
     HttpClientModule,

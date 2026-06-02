@@ -14,18 +14,18 @@
     class="text-menu"
     target="_blank"
     rel="noopener"
-    (click)="click('1')"
+    (click)="click('2')"
   >
-    Liên hệ
-    <i class="fa-duotone fa-thin fa-comment"></i>
+    COIN
   </span>
   <span
     class="text-menu"
     target="_blank"
     rel="noopener"
-    (click)="click('2')"
+    (click)="click('1')"
   >
-    Giỏ hàng
+    Liên hệ
+    <i class="fa-duotone fa-thin fa-comment"></i>
   </span>
   <ng-container *ngIf="isLogIn; else logOut" > 
   <span
@@ -67,7 +67,7 @@ Log out
       </h5>
     </marquee>
   </div>
-  <div class="style-cakes">
+  <!-- <div class="style-cakes">
     <ngx-slick-carousel
       class="carousel"
       #slickModal="slick-carousel"
@@ -87,7 +87,7 @@ Log out
         />
       </div>
     </ngx-slick-carousel>
-  </div>
+  </div> -->
 </div>
 
 <!-- <app-messenger [isChatOpen]="true"></app-messenger> -->

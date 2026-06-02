@@ -11,12 +11,12 @@ import { ManagerNumberService } from '../modules/manager-number/manager-number.s
 export class PageLayoutComponent implements OnInit {
   slides = [
     { img: '../assets/images/testcakes.jpg' },
-    { img: '../assets/images/banh1.jpg' },
-    { img: '../assets/images/banh1.jpg' },
-    { img: '../assets/images/banh3.jpg' },
-    { img: '../assets/images/banh4.jpg' },
-    { img: '../assets/images/banh5.jpg' },
-    { img: '../assets/images/banh6.jpg' },
+    // { img: '../assets/images/banh1.jpg' },
+    // { img: '../assets/images/banh1.jpg' },
+    // { img: '../assets/images/banh3.jpg' },
+    // { img: '../assets/images/banh4.jpg' },
+    // { img: '../assets/images/banh5.jpg' },
+    // { img: '../assets/images/banh6.jpg' },
   ];
   slideConfig = {
     slidesToShow: 4,
@@ -89,6 +89,7 @@ export class PageLayoutComponent implements OnInit {
         return
         break;
       case '2':
+        url = '/number/managercoin/views';
         break;
       case '3':
         localStorage.clear();

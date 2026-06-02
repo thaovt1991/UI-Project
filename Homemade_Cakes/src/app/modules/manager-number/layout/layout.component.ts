@@ -8,29 +8,29 @@ import { ManagerNumberService } from '../manager-number.service';
   styleUrls: ['./layout.component.css']
 })
 export class LayoutComponent {
-  crrMenu='0'
-  constructor(private router :Router,
-    private serviceNum : ManagerNumberService
-  ){
+  crrMenu = '3'//mac dinh tim so
+  constructor(private router: Router,
+    private serviceNum: ManagerNumberService
+  ) {
 
   }
-  click(e){
+  click(e) {
     this.serviceNum.menuClick.next(e);
     this.crrMenu = e
-  let url =''
-    switch(e){
-      case'1':
-      break;
-      case'2':
-      break;
-      case'3':
-      break;
+    let url = ''
+    switch (e) {
+      case '1':
+        break;
+      case '2':
+        break;
+      case '3':
+        break;
     }
-    if(!url) return
- this.router.navigate([`/${url}`]);
+    if (!url) return
+    this.router.navigate([`/${url}`]);
   }
 
-  backHome(){
+  backHome() {
     this.router.navigate(['/home']);
   }
 }
