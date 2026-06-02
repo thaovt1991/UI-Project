@@ -47,7 +47,7 @@ export class ManagerNumberComponent implements OnInit {
   initial: boolean = true;
   pageSettings: { pageCount: number; };
   loadingIndicator: { indicatorType: string; };
-  menu = '';
+  menu = '3';
   countOCR = 0
 
   constructor(
