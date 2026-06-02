@@ -62,7 +62,7 @@ export class ManagerNumberComponent implements OnInit {
     this.loadingIndicator = { indicatorType: 'Spinner' };
     //khai baaso
     this.serviceNum.menuClick.subscribe(e => {
-      this.menu = e;
+      this.menu = e ?? '3';
       this.changdef.detectChanges();
     })
     this.createArr();
