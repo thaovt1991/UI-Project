@@ -48,7 +48,8 @@ export class ManagerNumberComponent implements OnInit {
   pageSettings: { pageCount: number; };
   loadingIndicator: { indicatorType: string; };
   menu = '3';
-  countOCR = 0
+  countOCR = 0;
+  ocrScale = 2
 
   constructor(
     private serviceNum: ManagerNumberService,
@@ -372,8 +373,8 @@ export class ManagerNumberComponent implements OnInit {
           const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
           // Phóng to 2 lần là đủ, quan trọng là độ tương phản
-          canvas.width = img.width * 2;
-          canvas.height = img.height * 2;
+          canvas.width = img.width * this.ocrScale;
+          canvas.height = img.height * this.ocrScale;
           ctx.imageSmoothingEnabled = false;
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 

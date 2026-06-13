@@ -6,6 +6,7 @@ import { LayoutComponent } from './layout/layout.component';
 import { ButtonComponent, ButtonModule } from '@syncfusion/ej2-angular-buttons';
 import { NumericTextBoxComponent, NumericTextBoxModule } from '@syncfusion/ej2-angular-inputs';
 import { FilterService, GridModule, GroupService, PageService, SortService } from '@syncfusion/ej2-angular-grids';
+import { FormsModule } from '@angular/forms';
 
 
 export const routes: Routes = [
@@ -28,6 +29,7 @@ const T_Component: Type<any>[] = [
 @NgModule({
   declarations: T_Component, //Khai báo 1 mảng component hoặc  1 mang pipe
   imports: [
+    FormsModule ,
     NumericTextBoxModule,
     ButtonModule, 
     GridModule, 
