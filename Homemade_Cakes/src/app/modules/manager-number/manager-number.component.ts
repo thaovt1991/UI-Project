@@ -348,60 +348,61 @@ export class ManagerNumberComponent implements OnInit {
     this.arrNumCurrent[idx].isExited = !this.arrNumCurrent[idx].isExited;
     localStorage.setItem('arrNum', JSON.stringify(this.arrNumCurrent))
   }
-  //OCR ảnh
+  //#region OCR ảnh singer
   loading = false;
   progress = 0
   // 1. Bắt sự kiện chọn file
   async onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-       //await this.processOCR(file);
+      //await this.processOCR(file);
       var image = await this.preprocessImage(file);
       await this.processOCRBase64(image);
     }
   }
+
   //Phosng to image
   async preprocessImage(imageFile: File): Promise<string> {
     return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-        
-        // Phóng to 2 lần là đủ, quan trọng là độ tương phản
-        canvas.width = img.width * 2;
-        canvas.height = img.height * 2;
-        ctx.imageSmoothingEnabled = false; 
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
+          // Phóng to 2 lần là đủ, quan trọng là độ tương phản
+          canvas.width = img.width * 2;
+          canvas.height = img.height * 2;
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // BƯỚC QUAN TRỌNG: Lọc màu thông minh
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i], g = data[i+1], b = data[i+2];
-          
-          // Tính độ sáng (Luminance)
-          const brightness = (0.34 * r + 0.5 * g + 0.16 * b);
-          
-          // Xổ số thường có chữ Đỏ (Giải 8, ĐB) và chữ Đen (các giải còn lại)
-          // Ta ưu tiên giữ lại các vùng có màu đậm (chữ) và biến các vùng nhạt (nền, khung) thành trắng
-          // Ngưỡng 130 thường là "điểm ngọt" để tách chữ ra khỏi khung bảng
-          const isDark = brightness < 135; 
-          
-          const color = isDark ? 0 : 255;
-          data[i] = data[i + 1] = data[i + 2] = color;
-        }
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
 
-        ctx.putImageData(imageData, 0, 0);
-        resolve(canvas.toDataURL('image/png', 1.0));
+          // BƯỚC QUAN TRỌNG: Lọc màu thông minh
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+
+            // Tính độ sáng (Luminance)
+            const brightness = (0.34 * r + 0.5 * g + 0.16 * b);
+
+            // Xổ số thường có chữ Đỏ (Giải 8, ĐB) và chữ Đen (các giải còn lại)
+            // Ta ưu tiên giữ lại các vùng có màu đậm (chữ) và biến các vùng nhạt (nền, khung) thành trắng
+            // Ngưỡng 130 thường là "điểm ngọt" để tách chữ ra khỏi khung bảng
+            const isDark = brightness < 135;
+
+            const color = isDark ? 0 : 255;
+            data[i] = data[i + 1] = data[i + 2] = color;
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+          resolve(canvas.toDataURL('image/png', 1.0));
+        };
+        img.src = e.target?.result as string;
       };
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(imageFile);
-  });
+      reader.readAsDataURL(imageFile);
+    });
   }
   async processOCRBase64(imageFile64: string) {
     this.loading = true;
@@ -432,12 +433,12 @@ export class ManagerNumberComponent implements OnInit {
 
       const { data: { text } } = await worker.recognize(imageFile64);
 
-    // Xử lý chuỗi kết quả: Thay vì match trực tiếp, ta làm sạch chuỗi rác trước
-    const cleanText = text.replace(/[^0-9\s]/g, '');
-    const matches = cleanText.split(/\s+/).filter(num => num.length >= 2);
+      // Xử lý chuỗi kết quả: Thay vì match trực tiếp, ta làm sạch chuỗi rác trước
+      const cleanText = text.replace(/[^0-9\s]/g, '');
+      const matches = cleanText.split(/\s+/).filter(num => num.length >= 2);
 
-    if (matches.length > 0) {
-      this.updateNumbers(matches);
+      if (matches.length > 0) {
+        this.updateNumbers(matches);
       } else {
         alert("Không tìm thấy số nào!");
       }
@@ -471,8 +472,8 @@ export class ManagerNumberComponent implements OnInit {
     try {
       await worker.setParameters({
         tessedit_char_whitelist: '0123456789',
-      // PSM 11 rất mạnh trong việc tìm các con số nằm rải rác trong bảng
-      tessedit_pageseg_mode: '11' as any,
+        // PSM 11 rất mạnh trong việc tìm các con số nằm rải rác trong bảng
+        tessedit_pageseg_mode: '11' as any,
       });
 
       // Thực hiện nhận diện
@@ -591,6 +592,72 @@ export class ManagerNumberComponent implements OnInit {
       }
     }
   }
+
+
+  //#region Mutil file
+  // 1. Bắt sự kiện chọn file multil
+  async onFileMultiSelected(event: any) {
+    const files: File[] = Array.from(event.target.files);
+    if (files.length > 0) {
+      await this.processMultipleFiles(files);
+    }
+  }
+
+  // 3. Hàm xử lý nhiều file tuần tự
+  async processMultipleFiles(files: File[]) {
+    this.loading = true;
+    this.progress = 0;
+
+    const allMatches: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const image = await this.preprocessImage(files[i]);
+      const matches = await this.processOCRBase64Multi(image, i, files.length);
+      allMatches.push(...matches);
+    }
+
+    if (allMatches.length > 0) {
+      this.updateNumbers(allMatches);
+    } else {
+      alert('Không tìm thấy số nào!');
+    }
+
+    this.loading = false;
+  }
+
+  // 4. OCR trả về mảng số thay vì tự gọi updateNumbers
+  async processOCRBase64Multi(imageFile64: string, fileIndex: number, totalFiles: number): Promise<string[]> {
+    const worker = await createWorker('eng', 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          // Progress tổng = tiến độ file hiện tại chia đều cho tổng số file
+          const fileProgress = m.progress / totalFiles;
+          const baseProgress = fileIndex / totalFiles;
+          this.progress = Math.round((baseProgress + fileProgress) * 100);
+        }
+      },
+    });
+
+    try {
+      await worker.setParameters({
+        tessedit_char_whitelist: '0123456789',
+        tessedit_pageseg_mode: '6' as any,
+        tessedit_ocr_engine_mode: '1' as any,
+      });
+
+      const { data: { text } } = await worker.recognize(imageFile64);
+
+      const cleanText = text.replace(/[^0-9\s]/g, '');
+      return cleanText.split(/\s+/).filter(num => num.length >= 2);
+
+    } catch (error) {
+      console.error(`OCR Error file ${fileIndex + 1}:`, error);
+      return [];
+    } finally {
+      await worker.terminate();
+    }
+  }
+
 }
 export class NumClass {
   public value: string;
