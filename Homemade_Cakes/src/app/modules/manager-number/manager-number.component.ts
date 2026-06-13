@@ -384,15 +384,21 @@ export class ManagerNumberComponent implements OnInit {
           for (let i = 0; i < data.length; i += 4) {
             const r = data[i], g = data[i + 1], b = data[i + 2];
 
+            // Phát hiện chữ ĐỎ (Giải tám, Giải ĐB): r cao, g+b thấp
+            const isRed = r > 150 && g < 100 && b < 100;
+
             // Tính độ sáng (Luminance)
             const brightness = (0.34 * r + 0.5 * g + 0.16 * b);
-
+ 
             // Xổ số thường có chữ Đỏ (Giải 8, ĐB) và chữ Đen (các giải còn lại)
             // Ta ưu tiên giữ lại các vùng có màu đậm (chữ) và biến các vùng nhạt (nền, khung) thành trắng
             // Ngưỡng 130 thường là "điểm ngọt" để tách chữ ra khỏi khung bảng
             const isDark = brightness < 135;
+            
+            // Giữ lại nếu là đỏ HOẶC đậm → thành đen
+            const isText = isRed || isDark;
 
-            const color = isDark ? 0 : 255;
+            const color = isText ? 0 : 255;
             data[i] = data[i + 1] = data[i + 2] = color;
           }
 
