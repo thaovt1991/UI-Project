@@ -49,7 +49,8 @@ export class ManagerNumberComponent implements OnInit {
   loadingIndicator: { indicatorType: string; };
   menu = '3';
   countOCR = 0;
-  ocrScale = 2
+  ocrScale = 2; //chuẩn là 2
+  psmMode: string = '6'; // mặc định 6 vì đang chuẩn
 
   constructor(
     private serviceNum: ManagerNumberService,
@@ -390,12 +391,12 @@ export class ManagerNumberComponent implements OnInit {
 
             // Tính độ sáng (Luminance)
             const brightness = (0.34 * r + 0.5 * g + 0.16 * b);
- 
+
             // Xổ số thường có chữ Đỏ (Giải 8, ĐB) và chữ Đen (các giải còn lại)
             // Ta ưu tiên giữ lại các vùng có màu đậm (chữ) và biến các vùng nhạt (nền, khung) thành trắng
             // Ngưỡng 130 thường là "điểm ngọt" để tách chữ ra khỏi khung bảng
             const isDark = brightness < 135;
-            
+
             // Giữ lại nếu là đỏ HOẶC đậm → thành đen
             const isText = isRed || isDark;
 
@@ -634,28 +635,68 @@ export class ManagerNumberComponent implements OnInit {
 
   // 4. OCR trả về mảng số thay vì tự gọi updateNumbers
   async processOCRBase64Multi(imageFile64: string, fileIndex: number, totalFiles: number): Promise<string[]> {
+    const totalRuns = this.psmMode === 'both' ? 2 : 1;
+    let currentRun = 0;
+
     const worker = await createWorker('eng', 1, {
       logger: m => {
         if (m.status === 'recognizing text') {
-          // Progress tổng = tiến độ file hiện tại chia đều cho tổng số file
-          const fileProgress = m.progress / totalFiles;
+          // Mỗi run chiếm 1 phần của 1 file
+          const runProgress = (currentRun + m.progress) / totalRuns;
+          const fileProgress = runProgress / totalFiles;
           const baseProgress = fileIndex / totalFiles;
           this.progress = Math.round((baseProgress + fileProgress) * 100);
         }
       },
     });
+    // const worker = await createWorker('eng', 1, {
+    //   logger: m => {
+    //     if (m.status === 'recognizing text') {
+    //       // Progress tổng = tiến độ file hiện tại chia đều cho tổng số file
+    //       const fileProgress = m.progress / totalFiles;
+    //       const baseProgress = fileIndex / totalFiles;
+    //       this.progress = Math.round((baseProgress + fileProgress) * 100);
+    //     }
+    //   },
+    // });
 
     try {
-      await worker.setParameters({
-        tessedit_char_whitelist: '0123456789',
-        tessedit_pageseg_mode: '6' as any,
-        tessedit_ocr_engine_mode: '1' as any,
-      });
+      //Mới
+      const results = new Set<string>();
+      const extract = (text: string) =>
+        text.replace(/[^0-9\s]/g, '').split(/\s+/).filter(n => n.length >= 2);
 
-      const { data: { text } } = await worker.recognize(imageFile64);
+      const runPSM = async (psm: string) => {
+        await worker.setParameters({
+          tessedit_char_whitelist: '0123456789',
+          tessedit_pageseg_mode: psm as any,
+          tessedit_ocr_engine_mode: '1' as any,
+        });
+        const { data: { text } } = await worker.recognize(imageFile64);
+        extract(text).forEach(n => results.add(n));
+         currentRun++; // tăng SAU khi recognize xong
+      };
 
-      const cleanText = text.replace(/[^0-9\s]/g, '');
-      return cleanText.split(/\s+/).filter(num => num.length >= 2);
+      if (this.psmMode === 'both') {
+        await runPSM('6');
+        await runPSM('11');
+      } else {
+        await runPSM(this.psmMode);
+      }
+
+      return Array.from(results);
+
+      //Cũ
+      // await worker.setParameters({
+      //   tessedit_char_whitelist: '0123456789',
+      //   tessedit_pageseg_mode: '6' as any,
+      //   tessedit_ocr_engine_mode: '1' as any,
+      // });
+
+      // const { data: { text } } = await worker.recognize(imageFile64);
+
+      // const cleanText = text.replace(/[^0-9\s]/g, '');
+      // return cleanText.split(/\s+/).filter(num => num.length >= 2);
 
     } catch (error) {
       console.error(`OCR Error file ${fileIndex + 1}:`, error);
