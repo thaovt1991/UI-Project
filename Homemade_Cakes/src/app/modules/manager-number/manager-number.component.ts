@@ -721,17 +721,24 @@ export class ManagerNumberComponent implements OnInit {
 
   //#region  Tab thống kê
   /**
-   * Danh sách proxy CORS công khai — thử lần lượt, proxy nào sống thì dùng.
-   * `encode = true` nếu proxy nhận URL đích qua query param (phải encode),
-   * `false` nếu proxy nối thẳng URL đích vào sau.
+   * Cách lấy HTML vượt CORS:
+   * 1) Ưu tiên proxy local của ng serve (`/kqxs-proxy` → minhngoc) — ổn định nhất khi dev.
+   * 2) Fallback proxy CORS công khai nếu local proxy chưa bật / deploy production.
+   * `encode = true` nếu proxy nhận URL đích qua query param.
+   * `pathOnly = true` nếu chỉ nối path (dùng với proxy.conf.json).
    */
   statsCorsProxies = [
-    { prefix: 'https://proxy.cors.sh/', encode: false },
-    { prefix: 'https://api.allorigins.win/raw?url=', encode: true },
-    { prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true },
+    { prefix: '/kqxs-proxy', encode: false, pathOnly: true },
+    { prefix: 'https://proxy.cors.sh/', encode: false, pathOnly: false },
+    { prefix: 'https://api.allorigins.win/raw?url=', encode: true, pathOnly: false },
+    { prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true, pathOnly: false },
   ];
-  /** Giãn nhịp giữa các request (ms) để không làm phiền server minhngoc */
-  statsDelayMs = 2000; //2s gửi request 1 lần chậm nhưng an toàn
+  /** Giãn nhịp giữa các kỳ/miền thành công (ms) */
+  statsDelayMs = 2000; // 2s — an toàn
+  /** Timeout mỗi request proxy (ms) — tránh treo nút "Đang chạy..." */
+  private readonly STATS_FETCH_TIMEOUT_MS = 15000;
+  /** Delay ngắn khi thử proxy tiếp theo (không dùng full 2s) */
+  private readonly STATS_PROXY_RETRY_MS = 400;
   statsViewMode: 'day' | 'weekday' = 'weekday';
   statsStartDate: string = this.formatDateInput(new Date());
   statsRegions = [
@@ -982,29 +989,52 @@ export class ManagerNumberComponent implements OnInit {
 
   private async fetchOneRegion(date: Date, region: string): Promise<string[]> {
     const dateStr = this.formatDateMinhNgoc(date);
-    const targetUrl = `https://www.minhngoc.net.vn/ket-qua-xo-so/${region}/${dateStr}.html`;
+    const path = `/ket-qua-xo-so/${region}/${dateStr}.html`;
+    const targetUrl = `https://www.minhngoc.net.vn${path}`;
 
     let lastErr: any = null;
-    // Thử lần lượt các proxy, proxy nào trả về HTML hợp lệ thì dùng
+    // Thử lần lượt: local proxy trước, rồi CORS proxy công khai
     for (const proxy of this.statsCorsProxies) {
-      const proxyUrl = proxy.prefix + (proxy.encode ? encodeURIComponent(targetUrl) : targetUrl);
+      const proxyUrl = proxy.pathOnly
+        ? proxy.prefix + path
+        : proxy.prefix + (proxy.encode ? encodeURIComponent(targetUrl) : targetUrl);
       try {
-        const res = await fetch(proxyUrl, { method: 'GET' });
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-        const html = await res.text();
+        const html = await this.fetchWithTimeout(proxyUrl, this.STATS_FETCH_TIMEOUT_MS);
         if (!html || html.length < 5000) {
           throw new Error('HTML rỗng/không hợp lệ');
         }
-        return this.parseMinhNgocHtml(html, dateStr);
+        const parsed = this.parseMinhNgocHtml(html, dateStr);
+        if (!parsed.length) {
+          throw new Error('Không parse được số giải trong HTML');
+        }
+        return parsed;
       } catch (e) {
         lastErr = e;
         console.warn(`Proxy lỗi (${proxy.prefix}) - ${region} ${dateStr}:`, e);
-        await this.sleep(this.statsDelayMs);
+        await this.sleep(this.STATS_PROXY_RETRY_MS);
       }
     }
     throw new Error(`Không lấy được KQXS ${region} ngày ${dateStr}: ${lastErr?.message || lastErr}`);
+  }
+
+  /** fetch có timeout — tránh proxy treo làm UI đứng mãi ở "Đang chạy..." */
+  private async fetchWithTimeout(url: string, timeoutMs: number): Promise<string> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { method: 'GET', signal: controller.signal });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return await res.text();
+    } catch (e: any) {
+      if (e?.name === 'AbortError') {
+        throw new Error(`Timeout ${timeoutMs}ms`);
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   /**

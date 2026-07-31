@@ -1,0 +1,10 @@
+{
+  "/kqxs-proxy": {
+    "target": "https://www.minhngoc.net.vn",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/kqxs-proxy": ""
+    }
+  }
+}
