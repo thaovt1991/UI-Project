@@ -1,19 +1,60 @@
-<div class="mb-3 row">
-  <div class="col-4">
-    <div *ngIf="menu=='3'" class="count ">{{ 'Số lần OCR : ' + countOCR }}</div>
-    <input type="number" class="scale-input" [(ngModel)]="ocrScale" min="1" max="5" step="0.5"
-      title="Scale ảnh trước khi OCR" />
-    <span class="scale-label">x</span>
-     &nbsp;&nbsp; &nbsp;&nbsp;
-    <select class="psm-select" [(ngModel)]="psmMode" title="Chế độ OCR">
-      <option value="6">PSM 6</option>
-      <option value="11">PSM 11</option>
-      <option value="both">Cả 2</option>
-    </select>
+<div class="mb-3 row align-items-end">
+  <div [ngClass]="menu=='1' ? 'col-12 col-lg-10' : 'col-4'">
+    <ng-container *ngIf="menu=='3'">
+      <div  class="count ">{{ 'Số lần OCR : ' + countOCR }}</div>
+      <input type="number" class="scale-input" [(ngModel)]="ocrScale" min="1" max="5" step="0.5"
+        title="Scale ảnh trước khi OCR" />
+      <span class="scale-label">x</span>
+       &nbsp;&nbsp; &nbsp;&nbsp;
+      <select class="psm-select" [(ngModel)]="psmMode" title="Chế độ OCR">
+        <option value="6">PSM 6</option>
+        <option value="11">PSM 11</option>
+        <option value="both">Cả 2</option>
+      </select>
+    </ng-container>
+    <ng-container *ngIf="menu=='1'">
+      <div class="stats-filters">
+        <div class="stats-field">
+          <label>Khu vực</label>
+          <div class="stats-regions">
+            <label *ngFor="let r of statsRegions">
+              <input type="checkbox" [checked]="r.selected" (change)="toggleStatsRegion(r)" [disabled]="statsLoading" />
+              {{ r.label }}
+            </label>
+          </div>
+        </div>
+        <div class="stats-field">
+          <label>Chế độ xem</label>
+          <select class="psm-select" [(ngModel)]="statsViewMode" [disabled]="statsLoading">
+            <option value="day">Theo ngày</option>
+            <option value="weekday">Theo thứ</option>
+          </select>
+        </div>
+        <div class="stats-field">
+          <label>Ngày bắt đầu</label>
+          <input type="date" class="psm-select" [(ngModel)]="statsStartDate" [disabled]="statsLoading" />
+        </div>
+        <div class="stats-field stats-field-action">
+          <label>&nbsp;</label>
+          <button class="btn-primary" (click)="startStatistics()" [disabled]="statsLoading">
+            {{ statsLoading ? ('Đang chạy... ' + statsCount) : 'Bắt đầu Thống kê' }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+   
   </div>
-  <div class="col-8">
+  <div [ngClass]="menu=='1' ? 'col-12 col-lg-2' : 'col-8'">
     <div style="float: right">
-      <button *ngIf="menu!='3'">Thêm</button>
+
+      <ng-container *ngIf="menu=='1'">
+        <div class="button-group">
+          <button (click)="reset()" class="btn-reset">
+            Reset
+          </button>
+        </div>
+      </ng-container>
+
       <ng-container *ngIf="menu=='3'">
         <!-- <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden> -->
         <input type="file" #fileInput (change)="onFileMultiSelected($event)" accept="image/*" hidden multiple>
@@ -48,7 +89,84 @@
   </ng-container>
 
   <ng-template #viewMenu1>
-    <p>Menu 1</p>
+    <div class="d-flex stats-summary">
+      <div class="stats-card">
+        <div class="stats-card-label">Số kỳ đã duyệt (countEnd)</div>
+        <div class="stats-card-value">{{ countEnd ?? '—' }}</div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-label">Đã về / Còn lại</div>
+        <div class="stats-card-value">{{ statsExitedCount }} / {{ 100 - statsExitedCount }}</div>
+      </div>
+      <div class="stats-card stats-card-last" *ngIf="statsLastNums.length">
+        <div class="stats-card-label">Số tồn tại cuối cùng</div>
+        <div class="stats-card-value stats-last-value">{{ statsLastNumLabel }}</div>
+        <div class="stats-card-detail" *ngIf="statsLastNums[0] as last">
+          <span *ngIf="last.exitDate">Ngày: {{ last.exitDate }}</span>
+          <span *ngIf="last.exitCount != null"> · Kỳ thứ: {{ last.exitCount }}</span>
+        </div>
+      </div>
+      <div class="stats-card" *ngIf="statsSelectedNum">
+        <div class="stats-card-label">Chi tiết số {{ statsSelectedNum.value }}</div>
+        <div class="stats-card-detail">
+          <span>{{ statsSelectedNum.isExited ? 'Đã về' : 'Chưa về' }}</span>
+          <span *ngIf="statsSelectedNum.exitDate"> · Ngày: {{ statsSelectedNum.exitDate }}</span>
+          <span *ngIf="statsSelectedNum.exitCount != null"> · Kỳ thứ: {{ statsSelectedNum.exitCount }}</span>
+        </div>
+      </div>
+      <div class="stats-hint stats-error" *ngIf="statsError">Lỗi tải dữ liệu: {{ statsError }}</div>
+      <button type="button" class="btn-stats-log" *ngIf="statsLog.length"
+        (click)="showStatsLogModal = true" title="Xem nhật ký từng kỳ">
+        Nhật ký ({{ statsLog.length }})
+      </button>
+    </div>
+
+    <!-- Modal nhật ký từng kỳ -->
+    <div class="stats-modal-backdrop" *ngIf="showStatsLogModal" (click)="showStatsLogModal = false">
+      <div class="stats-modal" (click)="$event.stopPropagation()">
+        <div class="stats-modal-header">
+          <span>Nhật ký từng kỳ (đối chiếu dò tay)</span>
+          <button type="button" class="stats-modal-close" (click)="showStatsLogModal = false">×</button>
+        </div>
+        <div class="stats-modal-body">
+          <table class="stats-log-table">
+            <thead>
+              <tr>
+                <th>Kỳ</th>
+                <th>Ngày</th>
+                <th>Số giải</th>
+                <th>Đuôi duy nhất</th>
+                <th>Số mới về</th>
+                <th>Còn thiếu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of statsLog">
+                <td>{{ l.count }}</td>
+                <td>{{ l.date }}</td>
+                <td>{{ l.total }}</td>
+                <td>{{ l.uniq }}</td>
+                <td>{{ l.newCount }}</td>
+                <td>{{ l.remain }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="grid-container">
+      <div *ngFor="let num of (arrNumCurrentEnd?.length ? arrNumCurrentEnd : arrNumCurrent); let i = index">
+        <div class="num {{num.isExited ? 'exited' : 'not-exited'}} {{ num.isLast || isStatsLastNum(num) ? 'stats-last' : '' }}"
+          (click)="clickStatsNum(num)"
+          [title]="num.isExited
+            ? ('Số ' + num.value + ' · Ngày: ' + (num.exitDate || '—') + ' · Kỳ: ' + (num.exitCount ?? '—') + (num.isLast ? ' · CUỐI CÙNG' : ''))
+            : ('Số ' + num.value + ' · Chưa về')">
+          <span class="css-num">{{num?.value}}</span>
+          <small class="stats-cell-meta" *ngIf="num.isExited && num.exitCount != null">kỳ {{ num.exitCount }}</small>
+          <small class="stats-cell-last-tag" *ngIf="num.isLast || isStatsLastNum(num)">CUỐI</small>
+        </div>
+      </div>
+    </div>
   </ng-template>
 
   <ng-template #viewMenu2>

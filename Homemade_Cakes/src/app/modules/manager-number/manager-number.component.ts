@@ -320,13 +320,26 @@ export class ManagerNumberComponent implements OnInit {
     const confirmReset = confirm("Bạn có chắc chắn muốn xóa hết kết quả đã quét không?");
 
     if (confirmReset) {
-      // Nếu người dùng chọn OK mới thực hiện reset
-      this.arrNumCurrent.forEach(item => item.isExited = false);
-      localStorage.removeItem('arrNum');
-      this.countOCR = 0
-      localStorage.removeItem('countOCR');
-      // this.createArr();
-      console.log("Đã reset bảng số.");
+      if (this.menu == '1') {
+        //reset thống kê
+        this.statsLog = [];
+        this.countEnd = null;
+        this.arrNumCurrentEnd = [];
+        this.statsSelectedNum = null;
+        this.statsLastNums = [];
+        this.statsCount = 0;
+        this.statsError = '';
+        this.showStatsLogModal = false;
+        this.changdef.detectChanges();
+      } else {
+        // Nếu người dùng chọn OK mới thực hiện reset
+        this.arrNumCurrent.forEach(item => item.isExited = false);
+        localStorage.removeItem('arrNum');
+        this.countOCR = 0
+        localStorage.removeItem('countOCR');
+        // this.createArr();
+        console.log("Đã reset bảng số.");
+      }
     }
 
   }
@@ -674,7 +687,7 @@ export class ManagerNumberComponent implements OnInit {
         });
         const { data: { text } } = await worker.recognize(imageFile64);
         extract(text).forEach(n => results.add(n));
-         currentRun++; // tăng SAU khi recognize xong
+        currentRun++; // tăng SAU khi recognize xong
       };
 
       if (this.psmMode === 'both') {
@@ -705,6 +718,328 @@ export class ManagerNumberComponent implements OnInit {
       await worker.terminate();
     }
   }
+
+  //#region  Tab thống kê
+  /**
+   * Danh sách proxy CORS công khai — thử lần lượt, proxy nào sống thì dùng.
+   * `encode = true` nếu proxy nhận URL đích qua query param (phải encode),
+   * `false` nếu proxy nối thẳng URL đích vào sau.
+   */
+  statsCorsProxies = [
+    { prefix: 'https://proxy.cors.sh/', encode: false },
+    { prefix: 'https://api.allorigins.win/raw?url=', encode: true },
+    { prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true },
+  ];
+  /** Giãn nhịp giữa các request (ms) để không làm phiền server minhngoc */
+  statsDelayMs = 2000; //2s gửi request 1 lần chậm nhưng an toàn
+  statsViewMode: 'day' | 'weekday' = 'weekday';
+  statsStartDate: string = this.formatDateInput(new Date());
+  statsRegions = [
+    { key: 'mien-nam', label: 'Miền Nam', selected: true },
+    { key: 'mien-trung', label: 'Miền Trung', selected: false },
+    { key: 'mien-bac', label: 'Miền Bắc', selected: false },
+  ];
+  statsLoading = false;
+  statsCount = 0;
+  countEnd: number | null = null;
+  arrNumCurrentEnd: any[] = [];
+  statsSelectedNum: any = null;
+  statsError = '';
+  showStatsLogModal = false;
+  /** Nhật ký từng kỳ để đối chiếu với kết quả dò tay */
+  statsLog: { count: number; date: string; total: number; uniq: number; newCount: number; remain: number }[] = [];
+  /** Số(s) về cuối cùng (exitCount lớn nhất) */
+  statsLastNums: any[] = [];
+  /** Giới hạn an toàn tránh vòng lặp vô hạn */
+  private readonly STATS_MAX_LOOPS = 400;
+
+  get statsExitedCount(): number {
+    const list = this.arrNumCurrentEnd?.length ? this.arrNumCurrentEnd : this.arrNumCurrent;
+    return (list || []).filter((x: any) => x.isExited).length;
+  }
+
+  get statsLastNumLabel(): string {
+    if (!this.statsLastNums?.length) return '—';
+    return this.statsLastNums.map((x: any) => x.value).join(', ');
+  }
+
+  isStatsLastNum(num: any): boolean {
+    return !!num && this.statsLastNums.some((x: any) => x.value === num.value);
+  }
+
+  /** Tìm số về muộn nhất (exitCount max) để highlight */
+  private resolveStatsLastNums(list: any[]) {
+    const exited = (list || []).filter((x: any) => x.isExited && x.exitCount != null);
+    if (!exited.length) {
+      this.statsLastNums = [];
+      return;
+    }
+    const maxCount = Math.max(...exited.map((x: any) => x.exitCount));
+    this.statsLastNums = exited.filter((x: any) => x.exitCount === maxCount);
+    // đánh dấu trên từng phần tử để dễ style
+    (list || []).forEach((x: any) => {
+      x.isLast = this.statsLastNums.some((l: any) => l.value === x.value);
+    });
+  }
+
+  toggleStatsRegion(region: { key: string; label: string; selected: boolean }) {
+    region.selected = !region.selected;
+  }
+
+  /** Format Date -> yyyy-MM-dd cho input[type=date] */
+  private formatDateInput(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  /** Format Date -> dd-MM-yyyy (URL minhngoc) */
+  private formatDateMinhNgoc(d: Date): string {
+    const day = String(d.getDate()).padStart(2, '0');
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    return `${day}-${m}-${d.getFullYear()}`;
+  }
+
+  private parseDateInput(s: string): Date {
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  private cloneDate(d: Date): Date {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  private addDays(d: Date, n: number): Date {
+    const x = this.cloneDate(d);
+    x.setDate(x.getDate() + n);
+    return x;
+  }
+
+  /**
+   * Theo thứ: lấy ngày có cùng thứ với ngày gốc, gần nhất tính từ `from` trở về trước (kể cả `from`).
+   */
+  private nearestSameWeekday(from: Date, weekday: number): Date {
+    const d = this.cloneDate(from);
+    while (d.getDay() !== weekday) {
+      d.setDate(d.getDate() - 1);
+    }
+    return d;
+  }
+
+  /** Reset 100 số về trạng thái chưa về */
+  private resetStatsArray(): any[] {
+    const arr: any[] = [];
+    for (let i = 0; i < 100; i++) {
+      arr.push({
+        value: i < 10 ? '0' + i : String(i),
+        isExited: false,
+        exitDate: undefined,
+        exitCount: undefined,
+      });
+    }
+    return arr;
+  }
+
+  clickStatsNum(num: any) {
+    this.statsSelectedNum = num;
+  }
+
+  /**
+   * CORE: Bắt đầu thống kê chu kỳ về đủ 00–99
+   */
+  async startStatistics() {
+    const selected = this.statsRegions.filter(r => r.selected).map(r => r.key);
+    if (!selected.length) {
+      alert('Vui lòng chọn ít nhất 1 khu vực (Miền).');
+      return;
+    }
+    if (!this.statsStartDate) {
+      alert('Vui lòng chọn ngày bắt đầu.');
+      return;
+    }
+
+    this.statsLoading = true;
+    this.countEnd = null;
+    this.arrNumCurrentEnd = [];
+    this.statsSelectedNum = null;
+    this.statsLastNums = [];
+    this.statsCount = 0;
+    this.statsLog = [];
+    this.statsError = '';
+    this.showStatsLogModal = false;
+
+    // Bước 1: khởi tạo
+    let count = 0; // số kỳ đã duyệt (đếm từ 1 cho khớp cách dò tay)
+    this.arrNumCurrent = this.resetStatsArray();
+    let currentDate = this.parseDateInput(this.statsStartDate);
+    const targetWeekday = currentDate.getDay(); // thứ của Select 3
+
+    try {
+      while (count < this.STATS_MAX_LOOPS) {
+        // Bước 2.1: xác định ngày cần lấy KQ
+        let fetchDate = this.cloneDate(currentDate);
+        if (this.statsViewMode === 'weekday') {
+          fetchDate = this.nearestSameWeekday(currentDate, targetWeekday);
+        }
+
+        // Giãn nhịp giữa các kỳ
+        if (count > 0) {
+          await this.sleep(this.statsDelayMs);
+        }
+
+        // Bước 2.2 + 2.3: fetch & trích 2 số đuôi
+        const tails = await this.fetchLotteryData(fetchDate, selected);
+        count += 1;
+
+        // Bước 2.4: đánh dấu số lần đầu xuất hiện
+        const dateLabel = this.formatDateMinhNgoc(fetchDate);
+        let newCount = 0;
+        for (const tail of tails) {
+          const item = this.arrNumCurrent.find((x: any) => x.value === tail);
+          if (item && !item.isExited) {
+            item.isExited = true;
+            item.exitDate = dateLabel;
+            item.exitCount = count;
+            newCount++;
+          }
+        }
+
+        this.statsCount = count;
+        this.statsLog.push({
+          count,
+          date: dateLabel,
+          total: tails.length,
+          uniq: new Set(tails).size,
+          newCount,
+          remain: 100 - this.arrNumCurrent.filter((x: any) => x.isExited).length,
+        });
+        this.changdef.detectChanges();
+
+        // Bước 2.5: điều kiện dừng
+        const allExited = this.arrNumCurrent.every((x: any) => x.isExited);
+        if (allExited) {
+          this.countEnd = count;
+          this.arrNumCurrentEnd = this.arrNumCurrent.map(x => ({ ...x }));
+          this.resolveStatsLastNums(this.arrNumCurrentEnd);
+          break;
+        }
+
+        // Lùi về kỳ tiếp theo
+        if (this.statsViewMode === 'weekday') {
+          currentDate = this.addDays(fetchDate, -7); // cùng thứ, tuần trước
+        } else {
+          currentDate = this.addDays(fetchDate, -1);
+        }
+      }
+
+      if (this.countEnd == null) {
+        // Chưa đủ 100 số trong giới hạn — vẫn lưu kết quả hiện tại
+        this.countEnd = count;
+        this.arrNumCurrentEnd = this.arrNumCurrent.map(x => ({ ...x }));
+        this.resolveStatsLastNums(this.arrNumCurrentEnd);
+        alert(`Đã duyệt ${count} kỳ nhưng chưa về đủ 100 số. Còn ${100 - this.statsExitedCount} số chưa về.\nSố về muộn nhất hiện tại: ${this.statsLastNumLabel}`);
+      } else {
+        alert(`Hoàn tất! Cần ${this.countEnd} kỳ để về đủ 100 bộ số.\nSố tồn tại cuối cùng: ${this.statsLastNumLabel}`);
+      }
+    } catch (err: any) {
+      console.error('startStatistics error:', err);
+      // Dừng hẳn khi không lấy được dữ liệu thật, tránh trả ra con số sai
+      this.arrNumCurrentEnd = this.arrNumCurrent.map(x => ({ ...x }));
+      this.resolveStatsLastNums(this.arrNumCurrentEnd);
+      this.statsError = err?.message || 'Lỗi không xác định';
+      alert(`Dừng ở kỳ ${count} vì không lấy được dữ liệu:\n${this.statsError}`);
+    } finally {
+      this.statsLoading = false;
+      this.changdef.detectChanges();
+    }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Helper: lấy KQXS theo ngày + miền.
+   * Không có mock data — fetch lỗi thì báo lỗi để kết quả thống kê luôn là số thật.
+   */
+  async fetchLotteryData(date: Date, regions: string[]): Promise<string[]> {
+    const allNumbers: string[] = [];
+    for (let i = 0; i < regions.length; i++) {
+      // Giãn nhịp giữa các request để không dội vào server của minhngoc
+      if (i > 0) {
+        await this.sleep(this.statsDelayMs);
+      }
+      const numbers = await this.fetchOneRegion(date, regions[i]);
+      allNumbers.push(...numbers);
+    }
+    // Chuẩn hóa: chỉ giữ 2 chữ số cuối
+    return allNumbers
+      .map(n => String(n).replace(/\D/g, ''))
+      .filter(n => n.length >= 2)
+      .map(n => n.slice(-2));
+  }
+
+  private async fetchOneRegion(date: Date, region: string): Promise<string[]> {
+    const dateStr = this.formatDateMinhNgoc(date);
+    const targetUrl = `https://www.minhngoc.net.vn/ket-qua-xo-so/${region}/${dateStr}.html`;
+
+    let lastErr: any = null;
+    // Thử lần lượt các proxy, proxy nào trả về HTML hợp lệ thì dùng
+    for (const proxy of this.statsCorsProxies) {
+      const proxyUrl = proxy.prefix + (proxy.encode ? encodeURIComponent(targetUrl) : targetUrl);
+      try {
+        const res = await fetch(proxyUrl, { method: 'GET' });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const html = await res.text();
+        if (!html || html.length < 5000) {
+          throw new Error('HTML rỗng/không hợp lệ');
+        }
+        return this.parseMinhNgocHtml(html, dateStr);
+      } catch (e) {
+        lastErr = e;
+        console.warn(`Proxy lỗi (${proxy.prefix}) - ${region} ${dateStr}:`, e);
+        await this.sleep(this.statsDelayMs);
+      }
+    }
+    throw new Error(`Không lấy được KQXS ${region} ngày ${dateStr}: ${lastErr?.message || lastErr}`);
+  }
+
+  /**
+   * Parse HTML minhngoc.
+   * Trang 1 ngày còn kèm kết quả nhiều ngày khác (7 bảng) nên bắt buộc phải
+   * lọc đúng box có <td class="ngay"> khớp ngày đang xét, nếu không sẽ ăn nhầm
+   * số của các ngày khác và chu kỳ thống kê bị sai.
+   */
+  private parseMinhNgocHtml(html: string, dateStr: string): string[] {
+    const clean = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '');
+    const dateSlash = dateStr.replace(/-/g, '/'); // dd/MM/yyyy hiển thị trên trang
+
+    const results: string[] = [];
+    const boxes = clean.split(/<div class="box_kqxs">/i).slice(1);
+
+    for (const box of boxes) {
+      const ngayCell = box.match(/<td[^>]*class="ngay"[^>]*>([\s\S]*?)<\/td>/i);
+      if (!ngayCell || ngayCell[1].indexOf(dateSlash) === -1) continue;
+
+      // Trong box: mỗi giải nằm ở <td class="giai1..8|giaidb"><div>số</div></td>
+      const tdRegex = /<td[^>]*class="(?:giai\d|giaidb)"[^>]*>([\s\S]*?)<\/td>/gi;
+      let td: RegExpExecArray | null;
+      while ((td = tdRegex.exec(box)) !== null) {
+        const divRegex = /<div[^>]*>\s*(\d{2,6})\s*<\/div>/gi;
+        let dv: RegExpExecArray | null;
+        while ((dv = divRegex.exec(td[1])) !== null) {
+          results.push(dv[1]);
+        }
+      }
+    }
+    return results;
+  }
+  //#endregion
 
 }
 export class NumClass {
