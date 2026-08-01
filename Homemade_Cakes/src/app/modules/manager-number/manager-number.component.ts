@@ -822,6 +822,15 @@ export class ManagerNumberComponent implements OnInit {
     return x;
   }
 
+  /** true nếu ngày (chỉ tính ngày, bỏ giờ) >= ngày hiện tại */
+  private isDateOnOrAfterToday(d: Date): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const x = this.cloneDate(d);
+    x.setHours(0, 0, 0, 0);
+    return x.getTime() >= today.getTime();
+  }
+
   /**
    * Theo thứ: lấy ngày có cùng thứ với ngày gốc, gần nhất tính từ `from` trở về trước (kể cả `from`).
    */
@@ -894,12 +903,42 @@ export class ManagerNumberComponent implements OnInit {
           await this.sleep(this.statsDelayMs);
         }
 
-        // Bước 2.2 + 2.3: fetch & trích 2 số đuôi
-        const tails = await this.fetchLotteryData(fetchDate, selected);
+        const dateLabel = this.formatDateMinhNgoc(fetchDate);
+
+        // Bước 2.2 + 2.3: fetch TẤT CẢ miền đã chọn trong ngày
+        // - Có ≥1 miền lấy được → dùng dữ liệu các miền đó (miền chưa có KQ thì bỏ qua miền đó thôi)
+        // - Cả ngày không miền nào có data + ngày >= hôm nay → mới bỏ qua ngày, lùi kỳ tiếp
+        // - Cả ngày fail + ngày quá khứ → báo lỗi
+        const fetched = await this.fetchLotteryData(fetchDate, selected);
+
+        if (!fetched.succeeded.length) {
+          if (this.isDateOnOrAfterToday(fetchDate)) {
+            console.warn(
+              `Ngày ${dateLabel} (>= hôm nay): chưa miền nào có KQ trong [${selected.join(', ')}], bỏ qua → kỳ tiếp`
+            );
+            this.changdef.detectChanges();
+            if (this.statsViewMode === 'weekday') {
+              currentDate = this.addDays(fetchDate, -7);
+            } else {
+              currentDate = this.addDays(fetchDate, -1);
+            }
+            continue;
+          }
+          throw new Error(
+            `Không lấy được KQXS ngày ${dateLabel} cho các miền: ${fetched.failed.join(', ')}`
+          );
+        }
+
+        if (fetched.failed.length) {
+          console.warn(
+            `Ngày ${dateLabel}: đã lấy [${fetched.succeeded.join(', ')}], chưa có/lỗi [${fetched.failed.join(', ')}]`
+          );
+        }
+
+        const tails = fetched.tails;
         count += 1;
 
         // Bước 2.4: đánh dấu số lần đầu xuất hiện
-        const dateLabel = this.formatDateMinhNgoc(fetchDate);
         let newCount = 0;
         for (const tail of tails) {
           const item = this.arrNumCurrent.find((x: any) => x.value === tail);
@@ -966,24 +1005,43 @@ export class ManagerNumberComponent implements OnInit {
   }
 
   /**
-   * Helper: lấy KQXS theo ngày + miền.
-   * Không có mock data — fetch lỗi thì báo lỗi để kết quả thống kê luôn là số thật.
+   * Lấy KQXS theo ngày cho TẤT CẢ miền đã chọn.
+   * Mỗi miền fetch độc lập: miền lỗi/chưa có KQ không làm hủy các miền còn lại.
    */
-  async fetchLotteryData(date: Date, regions: string[]): Promise<string[]> {
+  async fetchLotteryData(
+    date: Date,
+    regions: string[]
+  ): Promise<{ tails: string[]; succeeded: string[]; failed: string[] }> {
     const allNumbers: string[] = [];
+    const succeeded: string[] = [];
+    const failed: string[] = [];
+
     for (let i = 0; i < regions.length; i++) {
-      // Giãn nhịp giữa các request để không dội vào server của minhngoc
       if (i > 0) {
         await this.sleep(this.statsDelayMs);
       }
-      const numbers = await this.fetchOneRegion(date, regions[i]);
-      allNumbers.push(...numbers);
+      const region = regions[i];
+      try {
+        const numbers = await this.fetchOneRegion(date, region);
+        if (numbers.length) {
+          allNumbers.push(...numbers);
+          succeeded.push(region);
+        } else {
+          failed.push(region);
+          console.warn(`Miền ${region} ngày ${this.formatDateMinhNgoc(date)}: không có số giải`);
+        }
+      } catch (e) {
+        failed.push(region);
+        console.warn(`Miền ${region} ngày ${this.formatDateMinhNgoc(date)} lỗi/chưa có KQ:`, e);
+      }
     }
-    // Chuẩn hóa: chỉ giữ 2 chữ số cuối
-    return allNumbers
+
+    const tails = allNumbers
       .map(n => String(n).replace(/\D/g, ''))
       .filter(n => n.length >= 2)
       .map(n => n.slice(-2));
+
+    return { tails, succeeded, failed };
   }
 
   private async fetchOneRegion(date: Date, region: string): Promise<string[]> {
