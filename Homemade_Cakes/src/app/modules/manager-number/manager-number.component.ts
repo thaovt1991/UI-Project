@@ -745,6 +745,8 @@ export class ManagerNumberComponent implements OnInit {
     { key: 'mien-trung', label: 'Miền Trung', selected: false },
     { key: 'mien-bac', label: 'Miền Bắc', selected: false },
   ];
+  /** Thứ tự ưu tiên khi chọn ≥2 miền (truy ngược): Bắc → Trung → Nam */
+  private readonly STATS_REGION_PRIORITY = ['mien-bac', 'mien-trung', 'mien-nam'];
   statsLoading = false;
   statsCount = 0;
   countEnd: number | null = null;
@@ -790,6 +792,17 @@ export class ManagerNumberComponent implements OnInit {
 
   toggleStatsRegion(region: { key: string; label: string; selected: boolean }) {
     region.selected = !region.selected;
+  }
+
+  /**
+   * Lấy danh sách miền đã chọn.
+   * ≥2 miền: sắp theo ưu tiên truy ngược Bắc → Trung → Nam.
+   * 1 miền: giữ nguyên miền đó.
+   */
+  private getSelectedRegionsOrdered(): string[] {
+    const selected = this.statsRegions.filter(r => r.selected).map(r => r.key);
+    if (selected.length < 2) return selected;
+    return this.STATS_REGION_PRIORITY.filter(key => selected.includes(key));
   }
 
   /** Format Date -> yyyy-MM-dd cho input[type=date] */
@@ -864,7 +877,7 @@ export class ManagerNumberComponent implements OnInit {
    * CORE: Bắt đầu thống kê chu kỳ về đủ 00–99
    */
   async startStatistics() {
-    const selected = this.statsRegions.filter(r => r.selected).map(r => r.key);
+    const selected = this.getSelectedRegionsOrdered();
     if (!selected.length) {
       alert('Vui lòng chọn ít nhất 1 khu vực (Miền).');
       return;
