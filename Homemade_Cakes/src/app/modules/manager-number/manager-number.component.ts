@@ -721,11 +721,10 @@ export class ManagerNumberComponent implements OnInit {
 
   //#region  Tab thống kê
   /**
-   * Cách lấy HTML vượt CORS:
-   * 1) Ưu tiên proxy local của ng serve (`/kqxs-proxy` → minhngoc) — ổn định nhất khi dev.
-   * 2) Fallback proxy CORS công khai nếu local proxy chưa bật / deploy production.
-   * `encode = true` nếu proxy nhận URL đích qua query param.
-   * `pathOnly = true` nếu chỉ nối path (dùng với proxy.conf.json).
+   * Danh sách proxy CORS.
+   * - Mỗi request mới: random trong FULL list.
+   * - Chỉ khi bị chặn mới bỏ proxy đó và random trong phần còn lại (của request đó).
+   * - Request thành công xong → request sau lại random full list (không giữ proxy cũ).
    */
   statsCorsProxies = [
     { prefix: '/kqxs-proxy', encode: false, pathOnly: true },
@@ -992,12 +991,22 @@ export class ManagerNumberComponent implements OnInit {
     const path = `/ket-qua-xo-so/${region}/${dateStr}.html`;
     const targetUrl = `https://www.minhngoc.net.vn${path}`;
 
+    /**
+     * Mỗi request (kỳ/miền) LUÔN bắt đầu từ FULL list + random.
+     * - Thành công → return; request sau lại random full list (không “dính” proxy cũ).
+     * - Bị chặn → mới bỏ proxy đó khỏi pool của request hiện tại, rồi random trong phần còn lại.
+     */
+    const pool = this.shuffleProxies([...this.statsCorsProxies]);
     let lastErr: any = null;
-    // Thử lần lượt: local proxy trước, rồi CORS proxy công khai
-    for (const proxy of this.statsCorsProxies) {
+
+    while (pool.length) {
+      // Random 1 proxy trong pool còn lại
+      const idx = Math.floor(Math.random() * pool.length);
+      const proxy = pool[idx];
       const proxyUrl = proxy.pathOnly
         ? proxy.prefix + path
         : proxy.prefix + (proxy.encode ? encodeURIComponent(targetUrl) : targetUrl);
+
       try {
         const html = await this.fetchWithTimeout(proxyUrl, this.STATS_FETCH_TIMEOUT_MS);
         if (!html || html.length < 5000) {
@@ -1007,14 +1016,32 @@ export class ManagerNumberComponent implements OnInit {
         if (!parsed.length) {
           throw new Error('Không parse được số giải trong HTML');
         }
-        return parsed;
+        console.log(`OK proxy ${proxy.prefix} — ${region} ${dateStr}`);
+        return parsed; // request sau sẽ random lại từ full list
       } catch (e) {
         lastErr = e;
-        console.warn(`Proxy lỗi (${proxy.prefix}) - ${region} ${dateStr}:`, e);
-        await this.sleep(this.STATS_PROXY_RETRY_MS);
+        // Chỉ khi bị chặn/lỗi mới bỏ proxy này khỏi pool request hiện tại
+        pool.splice(idx, 1);
+        console.warn(
+          `Proxy bị chặn (${proxy.prefix}) - ${region} ${dateStr}, còn ${pool.length} proxy để random:`,
+          e
+        );
+        if (pool.length) {
+          await this.sleep(this.STATS_PROXY_RETRY_MS);
+        }
       }
     }
+
     throw new Error(`Không lấy được KQXS ${region} ngày ${dateStr}: ${lastErr?.message || lastErr}`);
+  }
+
+  /** Xáo trộn mảng proxy (Fisher–Yates) — dùng khi bắt đầu mỗi request */
+  private shuffleProxies<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 
   /** fetch có timeout — tránh proxy treo làm UI đứng mãi ở "Đang chạy..." */
