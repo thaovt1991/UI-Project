@@ -324,12 +324,13 @@ export class ManagerNumberComponent implements OnInit {
         //reset thống kê
         this.statsLog = [];
         this.countEnd = null;
-        this.arrNumCurrentEnd = [];
+        this.arrNumCurrent.forEach(item => item.isExited = false);
         this.statsSelectedNum = null;
         this.statsLastNums = [];
         this.statsCount = 0;
         this.statsError = '';
         this.showStatsLogModal = false;
+        this.statsLoading = false;
         this.changdef.detectChanges();
       } else {
         // Nếu người dùng chọn OK mới thực hiện reset
@@ -727,13 +728,20 @@ export class ManagerNumberComponent implements OnInit {
    * - Request thành công xong → request sau lại random full list (không giữ proxy cũ).
    */
   statsCorsProxies = [
-    { prefix: '/kqxs-proxy', encode: false, pathOnly: true },
-    { prefix: 'https://proxy.cors.sh/', encode: false, pathOnly: false },
-    { prefix: 'https://api.allorigins.win/raw?url=', encode: true, pathOnly: false },
-    { prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true, pathOnly: false },
+    { prefix: 'https://corsproxy.io/?url=', encode: true, pathOnly: false },
+    { prefix: 'https://proxy.corsfix.com/?', encode: false, pathOnly: false },
+    { prefix: 'https://thingproxy.freeboard.io/fetch/', encode: false, pathOnly: false },
+    { prefix: 'https://cors.eu.org/', encode: false, pathOnly: false },
+    { prefix: 'https://corsproxy.dev/?url=', encode: true, pathOnly: false },
+    { prefix: 'https://test.cors.workers.dev/?', encode: false, pathOnly: false },
+    { prefix: 'https://api.allorigins.win/get?url=', encode: true, pathOnly: false }, // khác endpoint (get, không phải raw) — có thể chưa bị chặn dù allorigins/raw đã bị
+    { prefix: 'https://yacdn.org/proxy/', encode: false, pathOnly: false },
+    { prefix: 'https://universal-cors-proxy.glitch.me/', encode: false, pathOnly: false },
+    { prefix: 'https://cors-proxy.htmldriven.com/?url=', encode: true, pathOnly: false }, // trả JSON, cần parse .body
+    { prefix: 'http://www.whateverorigin.org/get?url=', encode: true, pathOnly: false }, // trả JSON, cần parse .contents
   ];
   /** Giãn nhịp giữa các kỳ/miền thành công (ms) */
-  statsDelayMs = 2000; // 2s — an toàn
+  statsDelayMs = this.getRandomInterval(); // 2s — an toàn
   /** Timeout mỗi request proxy (ms) — tránh treo nút "Đang chạy..." */
   private readonly STATS_FETCH_TIMEOUT_MS = 15000;
   /** Delay ngắn khi thử proxy tiếp theo (không dùng full 2s) */
@@ -913,7 +921,8 @@ export class ManagerNumberComponent implements OnInit {
 
         // Giãn nhịp giữa các kỳ
         if (count > 0) {
-          await this.sleep(this.statsDelayMs);
+          await this.sleep(this.getRandomInterval())
+         // await this.sleep(this.statsDelayMs);
         }
 
         const dateLabel = this.formatDateMinhNgoc(fetchDate);
@@ -1169,6 +1178,9 @@ export class ManagerNumberComponent implements OnInit {
   }
   //#endregion
 
+  getRandomInterval(): number {
+    return Math.floor(Math.random() * (7000 - 3000 + 1)) + 3000; // 3000ms - 7000ms
+  }
 }
 export class NumClass {
   public value: string;
