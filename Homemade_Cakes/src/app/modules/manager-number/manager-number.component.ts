@@ -331,6 +331,7 @@ export class ManagerNumberComponent implements OnInit {
         this.statsError = '';
         this.showStatsLogModal = false;
         this.statsLoading = false;
+        this.isStop = true; //dung bat buoc
         this.changdef.detectChanges();
       } else {
         // Nếu người dùng chọn OK mới thực hiện reset
@@ -762,6 +763,7 @@ export class ManagerNumberComponent implements OnInit {
   statsSelectedNum: any = null;
   statsError = '';
   showStatsLogModal = false;
+  isStop = false; //dung bat buoc khi nhan reset
   /** Nhật ký từng kỳ để đối chiếu với kết quả dò tay */
   statsLog: { count: number; date: string; total: number; uniq: number; newCount: number; remain: number }[] = [];
   /** Số(s) về cuối cùng (exitCount lớn nhất) */
@@ -904,6 +906,7 @@ export class ManagerNumberComponent implements OnInit {
     this.statsLog = [];
     this.statsError = '';
     this.showStatsLogModal = false;
+    this.isStop = false;
 
     // Bước 1: khởi tạo
     let count = 0; // số kỳ đã duyệt (đếm từ 1 cho khớp cách dò tay)
@@ -990,6 +993,10 @@ export class ManagerNumberComponent implements OnInit {
           this.arrNumCurrentEnd = this.arrNumCurrent.map(x => ({ ...x }));
           this.resolveStatsLastNums(this.arrNumCurrentEnd);
           break;
+        }
+        //dừng bắt buộc
+        if(this.isStop){
+           break;
         }
 
         // Lùi về kỳ tiếp theo
