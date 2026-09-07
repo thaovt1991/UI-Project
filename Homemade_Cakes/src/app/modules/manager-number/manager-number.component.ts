@@ -764,6 +764,10 @@ export class ManagerNumberComponent implements OnInit {
   statsError = '';
   showStatsLogModal = false;
   isStop = false; //dung bat buoc khi nhan reset
+
+  //giới hạn
+  minTime = 5;
+  maxTime = 10;
   /** Nhật ký từng kỳ để đối chiếu với kết quả dò tay */
   statsLog: { count: number; date: string; total: number; uniq: number; newCount: number; remain: number }[] = [];
   /** Số(s) về cuối cùng (exitCount lớn nhất) */
@@ -1186,7 +1190,8 @@ export class ManagerNumberComponent implements OnInit {
   //#endregion
 
   getRandomInterval(): number {
-    return Math.floor(Math.random() * (7000 - 3000 + 1)) + 3000; // 3000ms - 7000ms
+    if(this.maxTime <= this.minTime) this.maxTime = this.minTime +3;
+    return Math.floor(Math.random() * ((this.maxTime - this.minTime)*1000 + 1)) + this.minTime*1000; // 3000ms - 7000ms
   }
 }
 export class NumClass {

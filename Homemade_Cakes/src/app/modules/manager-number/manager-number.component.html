@@ -1,11 +1,11 @@
 <div class="mb-3 row align-items-end">
   <div [ngClass]="menu=='1' ? 'col-12 col-lg-10' : 'col-4'">
     <ng-container *ngIf="menu=='3'">
-      <div  class="count ">{{ 'Số lần OCR : ' + countOCR }}</div>
+      <div class="count ">{{ 'Số lần OCR : ' + countOCR }}</div>
       <input type="number" class="scale-input" [(ngModel)]="ocrScale" min="1" max="5" step="0.5"
         title="Scale ảnh trước khi OCR" />
       <span class="scale-label">x</span>
-       &nbsp;&nbsp; &nbsp;&nbsp;
+      &nbsp;&nbsp; &nbsp;&nbsp;
       <select class="psm-select" [(ngModel)]="psmMode" title="Chế độ OCR">
         <option value="6">PSM 6</option>
         <option value="11">PSM 11</option>
@@ -15,7 +15,11 @@
     <ng-container *ngIf="menu=='1'">
       <div class="stats-filters">
         <div class="stats-field">
-          <label>Khu vực</label>
+          <label>Khu vực&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span> TG: &nbsp;<input type="number"
+                class="scale-input" [(ngModel)]="minTime" min="2" step="1" />
+              <span class="scale-label">-</span>
+              <input type="number" class="scale-input" [(ngModel)]="maxTime" min="5" step="1" />
+            </span></label>
           <div class="stats-regions">
             <label *ngFor="let r of statsRegions">
               <input type="checkbox" [checked]="r.selected" (change)="toggleStatsRegion(r)" [disabled]="statsLoading" />
@@ -42,7 +46,7 @@
         </div>
       </div>
     </ng-container>
-   
+
   </div>
   <div [ngClass]="menu=='1' ? 'col-12 col-lg-2' : 'col-8'">
     <div style="float: right">
@@ -115,8 +119,8 @@
         </div>
       </div>
       <div class="stats-hint stats-error" *ngIf="statsError">Lỗi tải dữ liệu: {{ statsError }}</div>
-      <button type="button" class="btn-stats-log" *ngIf="statsLog.length"
-        (click)="showStatsLogModal = true" title="Xem nhật ký từng kỳ">
+      <button type="button" class="btn-stats-log" *ngIf="statsLog.length" (click)="showStatsLogModal = true"
+        title="Xem nhật ký từng kỳ">
         Nhật ký ({{ statsLog.length }})
       </button>
     </div>
@@ -156,9 +160,9 @@
     </div>
     <div class="grid-container">
       <div *ngFor="let num of (arrNumCurrentEnd?.length ? arrNumCurrentEnd : arrNumCurrent); let i = index">
-        <div class="num {{num.isExited ? 'exited' : 'not-exited'}} {{ num.isLast || isStatsLastNum(num) ? 'stats-last' : '' }}"
-          (click)="clickStatsNum(num)"
-          [title]="num.isExited
+        <div
+          class="num {{num.isExited ? 'exited' : 'not-exited'}} {{ num.isLast || isStatsLastNum(num) ? 'stats-last' : '' }}"
+          (click)="clickStatsNum(num)" [title]="num.isExited
             ? ('Số ' + num.value + ' · Ngày: ' + (num.exitDate || '—') + ' · Kỳ: ' + (num.exitCount ?? '—') + (num.isLast ? ' · CUỐI CÙNG' : ''))
             : ('Số ' + num.value + ' · Chưa về')">
           <span class="css-num">{{num?.value}}</span>
